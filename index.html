@@ -3,71 +3,696 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Zahlen Hörtraining</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;500;700&display=swap"
+        rel="stylesheet">
     <style>
+        :root {
+            --bg: #0d0d0f;
+            --surface: #16161a;
+            --surface2: #1e1e24;
+            --border: #2a2a35;
+            --accent: #5cffb1;
+            --accent2: #ff5c8a;
+            --accent3: #5ca8ff;
+            --text: #e8e8f0;
+            --muted: #6b6b80;
+            --correct: #5cffb1;
+            --wrong: #ff5c8a;
+            --heart: #ff5c8a;
+        }
+
+        body.light {
+            --bg: #f4f4f8;
+            --surface: #ffffff;
+            --surface2: #ebebf2;
+            --border: #d0d0de;
+            --accent: #00b865;
+            --accent2: #e8003d;
+            --accent3: #0055e8;
+            --text: #1a1a2e;
+            --muted: #888899;
+            --correct: #00b865;
+            --wrong: #e8003d;
+            --heart: #e8003d;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
-            font-family: Arial;
-            text-align: center;
-            margin-top: 50px;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 48px;
+            transition: background 0.3s, color 0.3s;
         }
 
-        input,
+        /* noise texture overlay */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.5;
+        }
+
+        .wrap {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 480px;
+        }
+
+        /* ── HEADER ── */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 28px;
+        }
+
+        .logo {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        .logo span {
+            color: var(--muted);
+        }
+
+        .theme-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 20px;
+            padding: 6px 14px;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .theme-btn:hover {
+            border-color: var(--accent);
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        /* ── SELECTORS ── */
+        .selectors {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .sel-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .sel-group label {
+            font-size: 11px;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+        }
+
         select {
-            font-size: 18px;
-            padding: 5px;
-            margin: 5px;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 9px 12px;
+            font-size: 14px;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 30px;
+            transition: border-color 0.2s;
         }
 
-        button {
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* ── PLAY BUTTONS ── */
+        .play-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-play {
+            flex: 1;
+            padding: 14px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: transform 0.1s, opacity 0.2s;
+        }
+
+        .btn-play:active {
+            transform: scale(0.97);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #0d0d0f;
+        }
+
+        .btn-secondary {
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        /* ── ANSWER ── */
+        .answer-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        #answer {
+            flex: 1;
+            padding: 13px 16px;
+            border-radius: 10px;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
             font-size: 18px;
-            margin: 10px;
-            padding: 8px 15px;
+            font-family: 'Space Mono', monospace;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #answer:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+        }
+
+        #answer.correct-flash {
+            border-color: var(--correct);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--correct) 15%, transparent);
+        }
+
+        #answer.wrong-flash {
+            border-color: var(--wrong);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--wrong) 15%, transparent);
+        }
+
+        .btn-check {
+            padding: 13px 18px;
+            border-radius: 10px;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            transition: border-color 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-check:hover {
+            border-color: var(--accent);
+        }
+
+        /* ── RESULT ── */
+        #result {
+            min-height: 28px;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+            padding: 4px;
+            font-family: 'Space Mono', monospace;
+            transition: color 0.2s;
+        }
+
+        #result.correct {
+            color: var(--correct);
+        }
+
+        #result.wrong {
+            color: var(--wrong);
+        }
+
+        /* ── GAME PANEL ── */
+        .game-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .game-header {
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .game-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .btn-game {
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            border: 1px solid var(--accent);
+            background: transparent;
+            color: var(--accent);
+            transition: background 0.15s, color 0.15s;
+        }
+
+        .btn-game:hover,
+        .btn-game.active {
+            background: var(--accent);
+            color: #0d0d0f;
+        }
+
+        .btn-game.stop {
+            border-color: var(--accent2);
+            color: var(--accent2);
+        }
+
+        .btn-game.stop:hover {
+            background: var(--accent2);
+            color: #fff;
+        }
+
+        .game-body {
+            padding: 16px 20px;
+        }
+
+        /* stats row */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .stat-box {
+            background: var(--surface2);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .stat-val {
+            font-family: 'Space Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1.2;
+        }
+
+        .stat-val.danger {
+            color: var(--accent2);
+        }
+
+        .stat-lbl {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            margin-top: 3px;
+        }
+
+        /* timer bar */
+        .timer-track {
+            height: 5px;
+            background: var(--surface2);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 14px;
+        }
+
+        .timer-bar {
+            height: 100%;
+            width: 100%;
+            background: var(--accent);
+            border-radius: 3px;
+            transition: background 0.3s;
+            transform-origin: left;
+        }
+
+        /* lives */
+        #lives {
+            font-size: 22px;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+
+        /* score & streak */
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .score-row span {
+            color: var(--accent);
+        }
+
+        /* level badge */
+        .level-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-family: 'Space Mono', monospace;
+            border: 1px solid var(--accent3);
+            color: var(--accent3);
+            letter-spacing: 0.08em;
+            margin-left: 8px;
+        }
+
+        /* ── HISTORY ── */
+        .history-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 8px;
+        }
+
+        #history-list {
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 5px;
+            max-height: 140px;
+            overflow-y: auto;
+        }
+
+        .h-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            background: var(--surface2);
+        }
+
+        .h-item .h-q {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .h-item .h-a {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+        }
+
+        .h-item.ok .h-a {
+            color: var(--correct);
+        }
+
+        .h-item.ng .h-a {
+            color: var(--wrong);
+        }
+
+        .h-badge {
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        .h-badge.ok {
+            background: color-mix(in srgb, var(--correct) 15%, transparent);
+            color: var(--correct);
+        }
+
+        .h-badge.ng {
+            background: color-mix(in srgb, var(--wrong) 15%, transparent);
+            color: var(--wrong);
+        }
+
+        /* ── TOOLTIP (hint) ── */
+        .hint {
+            font-size: 12px;
+            color: var(--muted);
+            text-align: center;
+            padding: 6px 0 0;
+        }
+
+        /* scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 2px;
+        }
+
+        /* pulse anim for ♥ */
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.25)
+            }
+        }
+
+        .pulse {
+            animation: pulse 0.3s ease;
+        }
+
+        /* shake for wrong */
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0)
+            }
+
+            20%,
+            60% {
+                transform: translateX(-6px)
+            }
+
+            40%,
+            80% {
+                transform: translateX(6px)
+            }
+        }
+
+        .shake {
+            animation: shake 0.35s ease;
+        }
+
+        /* pop for correct */
+        @keyframes pop {
+            0% {
+                transform: scale(1)
+            }
+
+            50% {
+                transform: scale(1.04)
+            }
+
+            100% {
+                transform: scale(1)
+            }
+        }
+
+        .pop {
+            animation: pop 0.3s ease;
+        }
+
+        footer {
+            margin-top: 32px;
+            font-size: 12px;
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+            text-align: center;
         }
     </style>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
+    <div class="wrap">
 
-    <h2>Zahlen Hörverstehen Trainer</h2>
+        <!-- HEADER -->
+        <header>
+            <div class="logo">Zahlen<span>Trainer</span></div>
+            <button class="theme-btn" onclick="toggleTheme()">◐ Theme</button>
+        </header>
 
-    <!-- TYPE SELECT -->
-    <select id="type">
-        <option value="number">Zahl</option>
-        <option value="price">Preis</option>
-        <option value="date">Datum</option>
-        <option value="phone">Telefonnummer</option>
-        <option value="address">Adresse</option>
-    </select>
+        <!-- CONFIG CARD -->
+        <div class="card">
+            <div class="selectors">
+                <div class="sel-group">
+                    <label>Typ</label>
+                    <select id="type" onchange="onTypeChange()">
+                        <option value="number">🔢 Zahl</option>
+                        <option value="price">💶 Preis</option>
+                        <option value="date">📅 Datum</option>
+                        <option value="phone">📞 Telefon</option>
+                        <option value="address">🏠 Adresse</option>
+                        <option value="mixed">🎲 Gemischt</option>
+                    </select>
+                </div>
+                <div class="sel-group">
+                    <label>Level</label>
+                    <select id="level">
+                        <option value="1">Level 1 · 1–99</option>
+                        <option value="2">Level 2 · 100–999</option>
+                        <option value="3">Level 3 · 1000+</option>
+                    </select>
+                </div>
+            </div>
 
-    <!-- LEVEL SELECT -->
-    <select id="level">
-        <option value="1">Level 1 (1–99)</option>
-        <option value="2">Level 2 (100–999)</option>
-        <option value="3">Level 3 (1000+)</option>
-    </select>
+            <div class="play-row">
+                <button class="btn-play btn-primary" onclick="play()">🔊 Abspielen</button>
+                <button class="btn-play btn-secondary" onclick="replay()">🔁 Nochmal</button>
+            </div>
+        </div>
 
-    <br>
+        <!-- ANSWER CARD -->
+        <div class="card">
+            <div class="answer-row">
+                <input id="answer" placeholder="Antwort eingeben…" autocomplete="off" autofocus>
+                <button class="btn-check" onclick="check()">✓ OK</button>
+            </div>
+            <div class="hint" id="hint"></div>
+            <p id="result"></p>
+        </div>
 
-    <button onclick="play()">🔊 Abspielen</button>
-    <button onclick="replay()">🔁 Nochmal</button>
+        <!-- GAME CARD -->
+        <div class="game-card">
+            <div class="game-header">
+                <div>
+                    <span class="game-title">Spielmodus</span>
+                    <span class="level-badge" id="game-level-badge">LVL 1</span>
+                </div>
+                <button class="btn-game" id="gameBtn" onclick="toggleGame()">▶ Starten</button>
+            </div>
+            <div class="game-body">
+                <!-- timer bar -->
+                <div class="timer-track">
+                    <div class="timer-bar" id="timerBar"></div>
+                </div>
 
-    <br>
+                <!-- stats -->
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <div class="stat-val" id="stat-score">0</div>
+                        <div class="stat-lbl">Punkte</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val" id="stat-streak">0</div>
+                        <div class="stat-lbl">Serie</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-val" id="stat-best">0</div>
+                        <div class="stat-lbl">Best</div>
+                    </div>
+                </div>
 
-    <input id="answer" placeholder="Antwort eingeben" autofocus>
-    <button onclick="check()">Überprüfen</button>
+                <!-- lives -->
+                <p id="lives"></p>
 
-    <br>
-    <button id="gameBtn" onclick="toggleGame()">🎮 Spiel starten</button>
+                <!-- history -->
+                <div style="margin-top:14px">
+                    <div class="history-title">Verlauf</div>
+                    <div id="history-list"></div>
+                </div>
+            </div>
+        </div>
 
-    <p id="lives"></p>
-    <p id="result"></p>
+        <footer>de-DE · TTS multi-strategy · v3</footer>
+    </div>
 
     <script>
+        // ─────────────────────────────────────────
+        // STATE
+        // ─────────────────────────────────────────
         let currentText = "";
         let currentAnswer = "";
+        let currentType = "";
+        let gameMode = false;
+        let lives = 3;
+        let score = 0;
+        let streak = 0;
+        let bestStreak = 0;
+        let gameLevel = 1;        // dynamic difficulty (1-3)
+        let correctInRow = 0;     // correct answers towards next level
+        let timer = null;
+        let timerAnim = null;
+        let timeLimit = 7000;     // ms, will decrease
+        let timerStart = 0;
+        const LEVEL_UP_THRESHOLD = 5;   // correct answers to level up
+        const LEVEL_DOWN_THRESHOLD = 3; // wrong answers to level down
+        let wrongInRow = 0;
 
-        // ===== GENERATORS =====
+        // ─────────────────────────────────────────
+        // GENERATORS
+        // ─────────────────────────────────────────
+        function rand(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
         function generateNumber(level) {
             if (level == 1) return rand(1, 99);
             if (level == 2) return rand(100, 999);
@@ -77,258 +702,496 @@
         function generatePrice(level) {
             let euros = generateNumber(level);
             let cents = rand(0, 99).toString().padStart(2, '0');
-
-            let text = `${euros} Euro ${cents}`;
-
             return {
-                text,
-                answer: { euros, cents }
+                text: `${euros} Euro ${cents}`,
+                answer: { type: 'price', euros, cents }
             };
         }
 
         function generateDate() {
-            const months = [
-                "Januar", "Februar", "März", "April", "Mai", "Juni",
-                "Juli", "August", "September", "Oktober", "November", "Dezember"
-            ];
-
+            const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
+                "Juli", "August", "September", "Oktober", "November", "Dezember"];
             let day = rand(1, 28);
-            let monthIndex = rand(0, 11);
-            let year = 2024;
-
+            let mi = rand(0, 11);
+            let year = rand(2000, 2030);
+            // 50% chance: speak month as number instead of name
+            let monthSpoken = Math.random() < 0.5 ? months[mi] : `${mi + 1}.`;
             return {
-                text: `${day}. ${months[monthIndex]} ${year}`,
-                answer: `${day}${monthIndex + 1}${year}`
+                text: `${day}. ${monthSpoken} ${year}`,
+                answer: { type: 'date', day, month: mi + 1, year }
             };
         }
 
         function generatePhone() {
-            let part1 = "01" + rand(5, 7); // 015, 016, 017
+            let part1 = "01" + rand(5, 7);
             let part2 = rand(100, 999);
             let part3 = rand(10, 99);
             let part4 = rand(10, 99);
-
-            let text = `${part1} ${part2} ${part3} ${part4}`;
-            let answer = `${part1}${part2}${part3}${part4}`;
-
-            return { text, answer };
-        }
-
-        function generateAddress() {
-            let streets = ["Hauptstraße", "Bahnhofstraße", "Goethestraße"];
-            let street = streets[rand(0, streets.length - 1)];
-            let num = rand(1, 200);
             return {
-                text: `${street} ${num}`,
-                answer: `${num}` // focus on number
+                text: `${part1} ${part2} ${part3} ${part4}`,
+                answer: { type: 'phone', full: `${part1}${part2}${part3}${part4}` }
             };
         }
 
-        // ===== MAIN GENERATOR =====
+        function generateAddress(level) {
+            const streets = ["Hauptstraße", "Bahnhofstraße", "Goethestraße", "Schillerstraße", "Lindenweg", "Rosenweg"];
+            let street = streets[rand(0, streets.length - 1)];
+            let num = generateNumber(level);
+            let zip = rand(10000, 99999);
+            return {
+                text: `${street} ${num}, ${zip}`,
+                answer: { type: 'address', num: num.toString(), zip: zip.toString() }
+            };
+        }
+
         function generate() {
-            let type = document.getElementById("type").value;
-            let level = document.getElementById("level").value;
+            let typeEl = document.getElementById("type").value;
+            let levelEl = parseInt(document.getElementById("level").value);
+            let effectiveLevel = gameMode ? gameLevel : levelEl;
 
-            if (type === "number") {
-                let n = generateNumber(level);
-                return { text: n.toString(), answer: n.toString() };
+            let type = typeEl;
+            if (type === "mixed") {
+                const types = ["number", "price", "date", "phone", "address"];
+                type = types[rand(0, types.length - 1)];
             }
+            currentType = type;
 
-            if (type === "price") return generatePrice(level);
+            if (type === "number") { let n = generateNumber(effectiveLevel); return { text: n.toString(), answer: { type: 'number', val: n.toString() } }; }
+            if (type === "price") return generatePrice(effectiveLevel);
             if (type === "date") return generateDate();
             if (type === "phone") return generatePhone();
-            if (type === "address") return generateAddress();
+            if (type === "address") return generateAddress(effectiveLevel);
         }
 
-        // ===== UTILS =====
-
-        function rand(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+        // ─────────────────────────────────────────
+        // HINT SYSTEM
+        // ─────────────────────────────────────────
+        function getHint(type) {
+            const hints = {
+                number: "Schreibe nur die Zahl, z.B. 47",
+                price: "Format: 12,99 · 12.99 · 1299 · 12 euro 99",
+                date: "Format: 14.3.2024 · 1432024 · 14 3 2024",
+                phone: "Nur Ziffern ohne Leerzeichen, z.B. 017612345678",
+                address: "Hausnummer + PLZ, z.B. 15 12345 oder nur 15"
+            };
+            return hints[type] || "";
         }
 
-        // ===== AUDIO =====
+        // ─────────────────────────────────────────
+        // ANSWER CHECKING
+        // ─────────────────────────────────────────
+        function isCorrect(user, answer) {
+            user = user.trim().toLowerCase().replace(/\s+/g, ' ');
+            if (!user) return false;
+
+            const t = answer.type;
+
+            if (t === 'number') {
+                return user === answer.val;
+            }
+
+            if (t === 'price') {
+                let e = answer.euros, c = answer.cents;
+                let cNum = parseInt(c);
+                let valid = [
+                    `${e}${c}`, `${e}.${c}`, `${e},${c}`,
+                    `${e} euro ${c}`, `${e}.${c} euro`, `${e},${c} euro`,
+                    `${e} ${c}`,
+                    // leading-zero variants
+                    `${e}.${parseInt(c)}`, `${e},${parseInt(c)}`
+                ];
+                return valid.includes(user);
+            }
+
+            if (t === 'date') {
+                let { day, month, year } = answer;
+                // Normalise: replace month name with its number before comparing
+                const monthNames = ["januar", "februar", "märz", "april", "mai", "juni",
+                    "juli", "august", "september", "oktober", "november", "dezember"];
+                // also common abbreviations
+                const monthAbbr = ["jan", "feb", "mär", "apr", "mai", "jun",
+                    "jul", "aug", "sep", "okt", "nov", "dez"];
+                let normalised = user;
+                monthNames.forEach((m, i) => {
+                    normalised = normalised.replace(new RegExp(m, 'gi'), (i + 1).toString());
+                });
+                monthAbbr.forEach((m, i) => {
+                    normalised = normalised.replace(new RegExp('\\b' + m + '\\.?\\b', 'gi'), (i + 1).toString());
+                });
+
+                let stripped = normalised.replace(/[.\-\/\s]/g, '');
+                let valid = [
+                    `${day}${month}${year}`,
+                    `${String(day).padStart(2, '0')}${String(month).padStart(2, '0')}${year}`,
+                    `${day}.${month}.${year}`,
+                    `${day} ${month} ${year}`,
+                ];
+                let strippedValid = valid.map(v => v.replace(/[.\-\/\s]/g, ''));
+                return strippedValid.includes(stripped);
+            }
+
+            if (t === 'phone') {
+                let stripped = user.replace(/[\s\-\/\(\)]/g, '');
+                return stripped === answer.full;
+            }
+
+            if (t === 'address') {
+                let stripped = user.replace(/[\s]/g, '');
+                // accept just the house number OR number+zip
+                return stripped === answer.num ||
+                    stripped === answer.num + answer.zip ||
+                    stripped === answer.zip + answer.num ||
+                    user === answer.num ||
+                    user === answer.zip;
+            }
+
+            return false;
+        }
+
+        // ─────────────────────────────────────────
+        // AUDIO — multi-strategy TTS
+        // Strategy 1: Web Speech API (Chrome desktop, Firefox, Safari)
+        // Strategy 2: window.Android.speak() — native JavascriptInterface bridge
+        //             (host app must expose this via addJavascriptInterface)
+        // Strategy 3: Google Translate TTS audio element fallback
+        //             (works in most WebViews that can play audio)
+        // ─────────────────────────────────────────
+        let ttsAudio = null; // for strategy 3
+
         function speak(text) {
-            let u = new SpeechSynthesisUtterance(text);
-            u.lang = "de-DE";
-            speechSynthesis.speak(u);
+            stopAudio();
+
+            // Strategy 1: standard Web Speech API
+            if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
+                try {
+                    let u = new SpeechSynthesisUtterance(text);
+                    u.lang = "de-DE";
+                    u.rate = 0.92;
+                    speechSynthesis.speak(u);
+                    return;
+                } catch (e) { /* fall through */ }
+            }
+
+            // Strategy 2: native Android bridge (host app exposes window.Android.speak)
+            if (window.Android && typeof window.Android.speak === 'function') {
+                try { window.Android.speak(text, "de-DE"); return; } catch (e) { /* fall through */ }
+            }
+
+            // Strategy 3: Google Translate TTS audio (requires internet, works in most WebViews)
+            try {
+                let encoded = encodeURIComponent(text);
+                let url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=de&client=tw-ob`;
+                ttsAudio = new Audio(url);
+                ttsAudio.play().catch(() => {
+                    // Strategy 4: silent fallback — show text visually so user can still read it
+                    showTextFallback(text);
+                });
+            } catch (e) {
+                showTextFallback(text);
+            }
         }
 
-        // ===== ACTIONS =====
+        function stopAudio() {
+            // Stop Web Speech API
+            if (typeof speechSynthesis !== 'undefined') {
+                try { speechSynthesis.cancel(); } catch (e) { }
+            }
+            // Stop audio element
+            if (ttsAudio) {
+                ttsAudio.pause();
+                ttsAudio.src = "";
+                ttsAudio = null;
+            }
+        }
+
+        function showTextFallback(text) {
+            // If no TTS works, briefly flash the text so the trainer is still usable
+            let el = document.getElementById("result");
+            el.textContent = "🔇 " + text;
+            el.className = "wrong";
+            setTimeout(() => { if (el.textContent.startsWith("🔇")) { el.textContent = ""; el.className = ""; } }, 3000);
+        }
+
+        // Stop audio when type changes
+        function onTypeChange() {
+            stopAudio();
+            currentText = "";
+            currentAnswer = "";
+            document.getElementById("answer").value = "";
+            document.getElementById("answer").className = "";
+            setResult("", "");
+            document.getElementById("hint").textContent = "";
+        }
+
+        // ─────────────────────────────────────────
+        // MAIN ACTIONS
+        // ─────────────────────────────────────────
         function play() {
             let data = generate();
             currentText = data.text;
             currentAnswer = data.answer;
-
             speak(currentText);
-            document.getElementById("result").innerText = "";
+            setResult("", "");
             document.getElementById("answer").value = "";
+            document.getElementById("answer").className = "";
+            document.getElementById("hint").textContent = getHint(currentType);
         }
 
-        function replay() {
-            speak(currentText);
-        }
+        function replay() { if (currentText) speak(currentText); }
 
         function check() {
+            if (gameMode && roundDone) return;
             clearTimeout(timer);
-
-            let user = document.getElementById("answer").value.trim().toLowerCase();
-
-            // PRICE
-            if (typeof currentAnswer === "object") {
-                let e = currentAnswer.euros;
-                let c = currentAnswer.cents;
-
-                let valid = [
-                    `${e}${c}`,
-                    `${e}.${c}`,
-                    `${e},${c}`,
-                    `${e} euro ${c}`,
-                    `${e}.${c} euro`,
-                    `${e},${c} euro`
-                ];
-
-                if (valid.includes(user)) {
-                    result("Richtig!");
-                    if (gameMode) setTimeout(nextRound, 1000);
-                } else {
-                    if (gameMode) loseLife("Falsch!");
-                    else result(`Falsch! → ${currentText}`);
-                }
-                return;
-            }
-
-            // NORMAL
-            if (user === currentAnswer) {
-                result("Richtig!");
-                if (gameMode) setTimeout(nextRound, 1000);
+            let user = document.getElementById("answer").value;
+            if (isCorrect(user, currentAnswer)) {
+                flashInput('correct-flash');
+                setResult("✓ Richtig!", "correct");
+                if (gameMode) onCorrect();
             } else {
-                if (gameMode) loseLife("Falsch!");
-                else result(`Falsch! → ${currentText}`);
+                flashInput('wrong-flash');
+                shakeInput();
+                if (gameMode) onWrong();
+                else setResult(`✗ Falsch → ${currentText}`, "wrong");
             }
         }
 
-        function result(text) {
-            document.getElementById("result").innerText = text;
+        function flashInput(cls) {
+            let el = document.getElementById("answer");
+            el.classList.remove('correct-flash', 'wrong-flash');
+            void el.offsetWidth; // reflow
+            el.classList.add(cls);
+            setTimeout(() => el.classList.remove(cls), 600);
         }
 
-        let lives = 3;
-        let gameMode = false;
-        let timer = null;
-        let timeLimit = 5000;
+        function shakeInput() {
+            let el = document.getElementById("answer");
+            el.classList.remove('shake');
+            void el.offsetWidth;
+            el.classList.add('shake');
+            setTimeout(() => el.classList.remove('shake'), 400);
+        }
 
+        function setResult(text, cls) {
+            let el = document.getElementById("result");
+            el.textContent = text;
+            el.className = cls;
+        }
+
+        // ─────────────────────────────────────────
+        // GAME LOGIC
+        // ─────────────────────────────────────────
         function toggleGame() {
-            if (gameMode) {
-                stopGame();
-            } else {
-                startGame();
-            }
+            if (gameMode) stopGame();
+            else startGame();
         }
 
         function startGame() {
-            lives = 3;
-            timeLimit = 5000;
             gameMode = true;
-            answered = false;
-            clearTimeout(timer);
-            speechSynthesis.cancel();
-            document.getElementById("gameBtn").innerText = "Stoppen";
+            lives = 3;
+            score = 0;
+            streak = 0;
+            bestStreak = 0;
+            gameLevel = parseInt(document.getElementById("level").value);
+            correctInRow = 0;
+            wrongInRow = 0;
+            timeLimit = 8000;
 
+            document.getElementById("gameBtn").textContent = "■ Stoppen";
+            document.getElementById("gameBtn").classList.add("stop");
+            updateStats();
             updateLives();
+            clearHistory();
             nextRound();
         }
 
         function stopGame() {
             clearTimeout(timer);
-            speechSynthesis.cancel();
-            lives = 3;
+            cancelAnimationFrame(timerAnim);
+            stopAudio();
             gameMode = false;
-            timeLimit = 5000;
-            document.getElementById("result").innerText = "";
-            document.getElementById("gameBtn").innerText = "🎮 Spiel starten";
-            document.getElementById("lives").innerText = "";
+
+            document.getElementById("gameBtn").textContent = "▶ Starten";
+            document.getElementById("gameBtn").classList.remove("stop");
+            document.getElementById("timerBar").style.width = "100%";
+            document.getElementById("timerBar").style.background = "var(--accent)";
+
+            setResult(`Spiel beendet · ${score} Punkte`, "correct");
+            updateLives();
         }
 
         function nextRound() {
-            if (!gameMode) return;
+            if (!gameMode || lives <= 0) { stopGame(); return; }
 
-            if (lives <= 0) {   
-                stopGame();
-                return;
-            }
-
-            answered = false;
+            roundDone = false;
             let data = generate();
             currentText = data.text;
             currentAnswer = data.answer;
 
             speak(currentText);
-
             document.getElementById("answer").value = "";
-            document.getElementById("result").innerText = "";
+            document.getElementById("answer").className = "";
+            document.getElementById("hint").textContent = getHint(currentType);
+            setResult("", "");
+            updateGameLevelBadge();
 
             clearTimeout(timer);
+            cancelAnimationFrame(timerAnim);
+
+            timerStart = performance.now();
+            animateTimer();
 
             timer = setTimeout(() => {
-                loseLife("⏱ Zu langsam!");
+                addHistory(currentText, "—", false);
+                onWrong(true);
             }, timeLimit);
-
-            // speed up (min 2 seconds)
-            // timeLimit = Math.max(2000, timeLimit - 200);
         }
 
-        function loseLife(msg) {
+        function animateTimer() {
+            let bar = document.getElementById("timerBar");
+            timerAnim = requestAnimationFrame(function tick() {
+                if (!gameMode) return;
+                let elapsed = performance.now() - timerStart;
+                let pct = Math.max(0, 1 - elapsed / timeLimit);
+                bar.style.width = (pct * 100) + "%";
+                bar.style.background = pct > 0.5 ? "var(--accent)" : pct > 0.25 ? "orange" : "var(--accent2)";
+                if (pct > 0) timerAnim = requestAnimationFrame(tick);
+            });
+        }
+
+        function onCorrect() {
+            clearTimeout(timer);
+            cancelAnimationFrame(timerAnim);
+            roundDone = true;
+
+            let elapsed = performance.now() - timerStart;
+            let timeBonus = Math.max(0, Math.floor((timeLimit - elapsed) / 500));
+            let levelBonus = gameLevel;
+            let pts = 10 + timeBonus + levelBonus * 5;
+
+            score += pts;
+            streak += 1;
+            if (streak > bestStreak) bestStreak = streak;
+            correctInRow += 1;
+            wrongInRow = 0;
+
+            addHistory(currentText, "✓", true);
+            setResult(`✓ +${pts} Punkte${streak > 2 ? ' 🔥×' + streak : ''}`, "correct");
+            updateStats();
+
+            // level up?
+            if (correctInRow >= LEVEL_UP_THRESHOLD && gameLevel < 3) {
+                gameLevel++;
+                correctInRow = 0;
+                timeLimit = Math.max(4000, timeLimit - 500);
+                setResult(`⬆ Level ${gameLevel}! +${pts}`, "correct");
+            }
+
+            setTimeout(nextRound, 900);
+        }
+
+        function onWrong(timeout = false) {
+            clearTimeout(timer);
+            cancelAnimationFrame(timerAnim);
+            roundDone = true;
+
             lives--;
+            streak = 0;
+            wrongInRow += 1;
+            correctInRow = 0;
+
+            addHistory(currentText, timeout ? "⏱" : "✗", false);
+            setResult(timeout ? `⏱ Zu langsam → ${currentText}` : `✗ Falsch → ${currentText}`, "wrong");
+            updateStats();
             updateLives();
-            result(`${msg} → ${currentText}`);
 
-            setTimeout(nextRound, 1500);
-        }   
+            // level down?
+            if (wrongInRow >= LEVEL_DOWN_THRESHOLD && gameLevel > 1) {
+                gameLevel--;
+                wrongInRow = 0;
+                timeLimit = Math.min(8000, timeLimit + 500);
+            }
 
-        function updateLives() {
-            document.getElementById("lives").innerText =
-                "❤️".repeat(lives) + "🖤".repeat(3 - lives);
-        }
-
-        let answered = false;
-        document.getElementById("answer").addEventListener("input", autoCheck);
-        
-        function autoCheck() {
-            if (!gameMode) return;
-
-            let user = document.getElementById("answer").value.trim().toLowerCase();
-
-            // PRICE
-            if (typeof currentAnswer === "object") {
-                let e = currentAnswer.euros;
-                let c = currentAnswer.cents;
-
-                let valid = [
-                    `${e}${c}`,
-                    `${e}.${c}`,
-                    `${e},${c}`,
-                    `${e} euro ${c}`,
-                    `${e}.${c} euro`,
-                    `${e},${c} euro`
-                ];
-
-                if (valid.includes(user)) {
-                    clearTimeout(timer);
-                    result("Richtig!");
-                    setTimeout(nextRound, 800);
-                }
+            if (lives <= 0) {
+                setTimeout(() => { stopGame(); setResult(`💀 Spiel vorbei · ${score} Punkte`, "wrong"); }, 800);
                 return;
             }
-
-            // NORMAL
-            if (user === currentAnswer) {
-                clearTimeout(timer);
-                result("Richtig!");
-                setTimeout(nextRound, 800);
-            }
+            setTimeout(nextRound, 1400);
         }
-        
-    </script>
 
+        function updateStats() {
+            document.getElementById("stat-score").textContent = score;
+            document.getElementById("stat-streak").textContent = streak;
+            document.getElementById("stat-best").textContent = bestStreak;
+            let sv = document.getElementById("stat-streak");
+            sv.className = "stat-val" + (streak >= 3 ? " danger" : "");
+        }
+
+        function updateLives() {
+            let el = document.getElementById("lives");
+            if (!gameMode) { el.textContent = ""; return; }
+            let s = "❤️".repeat(lives) + "🖤".repeat(Math.max(0, 3 - lives));
+            el.textContent = s;
+            el.classList.remove('pulse');
+            void el.offsetWidth;
+            el.classList.add('pulse');
+        }
+
+        function updateGameLevelBadge() {
+            document.getElementById("game-level-badge").textContent = `LVL ${gameLevel}`;
+        }
+
+        // ─────────────────────────────────────────
+        // HISTORY
+        // ─────────────────────────────────────────
+        function addHistory(question, answer, ok) {
+            let list = document.getElementById("history-list");
+            let item = document.createElement("div");
+            item.className = "h-item " + (ok ? "ok" : "ng");
+            item.innerHTML = `<span class="h-q">${question}</span>
+    <span class="h-a">${answer} <span class="h-badge ${ok ? 'ok' : 'ng'}">${ok ? '✓' : '✗'}</span></span>`;
+            list.appendChild(item);
+            list.scrollTop = list.scrollHeight;
+        }
+
+        function clearHistory() {
+            document.getElementById("history-list").innerHTML = "";
+        }
+
+        // ─────────────────────────────────────────
+        // AUTO-CHECK ON INPUT
+        // ─────────────────────────────────────────
+        let roundDone = false; // guard: prevents double-fire when auto-check + Enter both trigger
+
+        document.getElementById("answer").addEventListener("input", () => {
+            if (!gameMode || roundDone) return;
+            let user = document.getElementById("answer").value;
+            if (isCorrect(user, currentAnswer)) {
+                roundDone = true;
+                flashInput('correct-flash');
+                setResult("✓ Richtig!", "correct");
+                onCorrect();
+            }
+        });
+
+        document.getElementById("answer").addEventListener("keydown", e => {
+            if (e.key === "Enter") check();
+        });
+
+        // ─────────────────────────────────────────
+        // THEME
+        // ─────────────────────────────────────────
+        function setTheme(mode) {
+            document.body.classList.remove("dark", "light");
+            document.body.classList.add(mode);
+            localStorage.setItem("theme", mode);
+        }
+        function toggleTheme() {
+            setTheme(document.body.classList.contains("dark") ? "light" : "dark");
+        }
+        (function () {
+            setTheme(localStorage.getItem("theme") || "dark");
+        })();
+    </script>
 </body>
 
 </html>
