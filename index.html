@@ -567,6 +567,46 @@
             font-family: 'Space Mono', monospace;
             text-align: center;
         }
+
+        /* ── MODE TOGGLE ── */
+        .mode-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 16px;
+        }
+
+        .mode-btn {
+            padding: 9px 6px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'DM Sans', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            border: 1px solid var(--border);
+            background: var(--surface2);
+            color: var(--muted);
+            transition: all 0.15s;
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .mode-btn:hover {
+            border-color: var(--accent);
+            color: var(--text);
+        }
+
+        .mode-btn.active {
+            background: color-mix(in srgb, var(--accent) 15%, transparent);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .mode-btn#mode-ki.active {
+            background: color-mix(in srgb, var(--accent3) 15%, transparent);
+            border-color: var(--accent3);
+            color: var(--accent3);
+        }
     </style>
 </head>
 
@@ -581,6 +621,13 @@
 
         <!-- CONFIG CARD -->
         <div class="card">
+            <!-- MODE TOGGLE -->
+            <div class="mode-row">
+                <button class="mode-btn active" id="mode-single" onclick="setMode('single')">🔢 Einzeln</button>
+                <button class="mode-btn" id="mode-template" onclick="setMode('template')">💬 Sätze</button>
+                <button class="mode-btn" id="mode-ki" onclick="setMode('ki')">✨ KI-Sätze</button>
+            </div>
+
             <div class="selectors">
                 <div class="sel-group">
                     <label>Typ</label>
@@ -661,7 +708,43 @@
             </div>
         </div>
 
-        <footer>de-DE · TTS multi-strategy · v3</footer>
+        <footer>de-DE · TTS multi-strategy · <span id="llm-status"
+                style="opacity:0;transition:opacity 0.3s;color:var(--accent3)">✨ KI</span> · v3</footer>
+    </div>
+
+    <!-- TTS FALLBACK TOAST -->
+    <div id="tts-toast" style="
+  display:none; position:fixed; inset:0; z-index:999;
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
+  align-items: center; justify-content: center; padding: 24px;
+">
+        <div style="
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px 24px; max-width: 380px; width: 100%;
+    text-align: center; font-family: 'DM Sans', sans-serif;
+  ">
+            <div style="font-size: 48px; margin-bottom: 12px;">🔇</div>
+            <div style="font-size: 13px; color: var(--muted); font-family: 'Space Mono', monospace;
+      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">
+                Audio nicht verfügbar
+            </div>
+            <div id="tts-toast-text" style="
+      font-family: 'Space Mono', monospace; font-size: 15px;
+      color: var(--accent); line-height: 1.6;
+      background: var(--surface2); border-radius: 8px;
+      padding: 12px 14px; margin-bottom: 16px;
+      border: 1px solid var(--border);
+    "></div>
+            <div style="font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
+                💡 Für Audio: HTML-Datei direkt im Browser öffnen<br>
+                <span style="color:var(--accent3)">(Chrome / Firefox / Safari)</span>
+            </div>
+            <button onclick="closeTtsToast()" style="
+      padding: 10px 28px; border-radius: 8px; font-size: 14px; font-weight: 700;
+      background: var(--accent); color: #0d0d0f; border: none; cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+    ">OK, verstanden</button>
+        </div>
     </div>
 
     <script>
@@ -693,74 +776,341 @@
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
+        // ─────────────────────────────────────────
+        // MODE
+        // single   — speak only the raw value (number, price, etc.)
+        // template — wrap in a hardcoded German sentence template
+        // ki       — Claude generates a fresh sentence each round
+        // ─────────────────────────────────────────
+        let currentMode = 'single';
+
+        function setMode(mode) {
+            currentMode = mode;
+            ['single', 'template', 'ki'].forEach(m => {
+                document.getElementById('mode-' + m).classList.toggle('active', m === mode);
+            });
+            // reset prefetch when switching to/from KI
+            prefetchedData = null;
+            prefetchPromise = null;
+            onTypeChange();
+        }
+
+        // ─────────────────────────────────────────
+        // SENTENCE TEMPLATES (mode: template)
+        // 20 structures per type, each with varied subjects/objects
+        // ─────────────────────────────────────────
+
+        // Subjects/objects pools — picked randomly to vary sentences
+        const subjectPools = {
+            number: [
+                "Der Lehrer", "Die Mutter", "Mein Vater", "Der Arzt", "Die Kassiererin",
+                "Der Sportler", "Meine Schwester", "Der Fahrer", "Die Lehrerin", "Der Koch",
+                "Mein Freund", "Die Nachbarin", "Der Chef", "Mein Bruder", "Die Ärztin",
+                "Der Journalist", "Meine Kollegin", "Der Verkäufer", "Die Trainerin", "Der Pilot"
+            ],
+            priceItem: [
+                "das Buch", "die Jacke", "der Kaffee", "die Fahrkarte", "das Gemüse",
+                "das Handy", "die Schuhe", "die Pizza", "die Zeitung", "das Medikament",
+                "die Blumen", "das Spielzeug", "der Laptop", "das Fahrrad", "das Hemd",
+                "die Flasche Wein", "die Reparatur", "der Haarschnitt", "die Kinokarte", "das Mittagessen"
+            ],
+            priceShop: [
+                "im Supermarkt", "im Buchladen", "auf dem Markt", "im Café", "in der Apotheke",
+                "im Kaufhaus", "online", "an der Kasse", "im Restaurant", "im Sportgeschäft",
+                "beim Friseur", "in der Bäckerei", "im Elektromarkt", "an der Tankstelle", "im Modegeschäft",
+                "beim Bäcker", "im Baumarkt", "in der Metzgerei", "im Spielzeugladen", "beim Optiker"
+            ],
+            dateEvent: [
+                "der Arzttermin", "Ihr Geburtstag", "die Hochzeit", "das Konzert", "die Prüfung",
+                "der Urlaub", "das Meeting", "die Konferenz", "das Fußballspiel", "der Schulanfang",
+                "die Abgabefrist", "das Familientreffen", "das Stadtfest", "der Kursstart", "das Bewerbungsgespräch",
+                "die Abreise", "das Jubiläum", "der Elternabend", "die Abschlussfeier", "die Operation"
+            ],
+            datePerson: [
+                "Mein Arzt", "Die Lehrerin", "Mein Chef", "Die Freundin", "Der Standesbeamte",
+                "Meine Mutter", "Der Trainer", "Die Sekretärin", "Mein Kollege", "Der Vermieter",
+                "Die Ärztin", "Mein Bruder", "Der Koordinator", "Die Organisatorin", "Mein Vater",
+                "Der Direktor", "Meine Schwester", "Der Therapeut", "Die Professorin", "Mein Freund"
+            ],
+            phoneService: [
+                "die Arztpraxis", "der Pizzaservice", "die Taxizentrale", "der Kundenservice", "die Notaufnahme",
+                "mein Freund", "meine Kollegin", "der Vermieter", "die Autowerkstatt", "die Apotheke",
+                "die Bank", "der Friseur", "der Klempner", "die Schule", "das Hotel",
+                "das Reisebüro", "der Tierarzt", "der Rechtsanwalt", "das Fitnessstudio", "der Supermarkt"
+            ],
+            addressContext: [
+                "das Paket", "der Arztbesuch", "die Einladung", "der Umzug", "die Taxifahrt",
+                "die Anmeldung", "die Reservierung", "der Besuch", "das Vorstellungsgespräch", "die Buchung",
+                "der Handwerker", "die Schulanmeldung", "die Bankberatung", "der Zahnarzttermin", "die Wohnung",
+                "der Nachbar", "die Wohnungsbesichtigung", "die Abholung", "die Hochzeitseinladung", "die Meldung"
+            ]
+        };
+
+        function rndFrom(pool) {
+            return pool[rand(0, pool.length - 1)];
+        }
+
+        const templateSentences = {
+            number: [
+                n => { let s = rndFrom(subjectPools.number); return `${s} hat die Zahl ${n} genannt.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} schreibt die Zahl ${n} an die Tafel.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} denkt an die Zahl ${n}.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} sucht die Zahl ${n} in der Liste.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} hat ${n} als Ergebnis berechnet.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} wiederholt die Zahl ${n} noch einmal.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} hat ${n} Punkte erzielt.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} tippt die Zahl ${n} ins Telefon.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} nennt ${n} als seine Lieblingszahl.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} liest die Zahl ${n} laut vor.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} hat ${n} Kilometer zurückgelegt.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} bestätigt die Zahl ${n}.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} merkt sich die Zahl ${n}.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} korrigiert das Ergebnis auf ${n}.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} hat ${n} Seiten gelesen.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} zählt insgesamt ${n} Stück.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} gibt die Zahl ${n} in das Formular ein.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} hat ${n} als PIN-Nummer gewählt.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} sagt, die richtige Antwort ist ${n}.`; },
+                n => { let s = rndFrom(subjectPools.number); return `${s} wiederholt: die Zahl ist ${n}.`; },
+            ],
+            price: [
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); let sh = rndFrom(subjectPools.priceShop); return `${i.charAt(0).toUpperCase() + i.slice(1)} kostet ${sh} ${e} Euro ${c}.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Ich habe ${i} für ${e} Euro ${c} gekauft.`; },
+                (e, c) => { let sh = rndFrom(subjectPools.priceShop); return `${sh.charAt(0).toUpperCase() + sh.slice(1)} bezahlt man ${e} Euro ${c}.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Der Preis für ${i} beträgt ${e} Euro ${c}.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Das Sonderangebot für ${i} gilt für ${e} Euro ${c}.`; },
+                (e, c) => { let sh = rndFrom(subjectPools.priceShop); return `Die Rechnung ${sh} beläuft sich auf ${e} Euro ${c}.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Meine Mutter hat ${i} für ${e} Euro ${c} bestellt.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Der Kassenbon zeigt ${e} Euro ${c} für ${i}.`; },
+                (e, c) => { let sh = rndFrom(subjectPools.priceShop); return `Bitte zahlen Sie ${e} Euro ${c} ${sh}.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `${i.charAt(0).toUpperCase() + i.slice(1)} wurde im Angebot für ${e} Euro ${c} verkauft.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Er hat für ${i} insgesamt ${e} Euro ${c} ausgegeben.`; },
+                (e, c) => { let sh = rndFrom(subjectPools.priceShop); return `Der Einkauf ${sh} hat ${e} Euro ${c} gekostet.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Das neue ${i} ist für nur ${e} Euro ${c} erhältlich.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Sie schulden uns ${e} Euro ${c} für ${i}.`; },
+                (e, c) => { let sh = rndFrom(subjectPools.priceShop); return `Der Gesamtbetrag ${sh} lautet ${e} Euro ${c}.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Mein Kollege kaufte ${i} für genau ${e} Euro ${c}.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Auf dem Preisschild steht ${e} Euro ${c} für ${i}.`; },
+                (e, c) => { let sh = rndFrom(subjectPools.priceShop); return `${sh.charAt(0).toUpperCase() + sh.slice(1)} kostet das heute ${e} Euro ${c}.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Die Lieferung von ${i} kostet ${e} Euro ${c} extra.`; },
+                (e, c) => { let i = rndFrom(subjectPools.priceItem); return `Im Vergleich war ${i} damals für ${e} Euro ${c} zu haben.`; },
+            ],
+            date: [
+                d => { let e = rndFrom(subjectPools.dateEvent); return `${e.charAt(0).toUpperCase() + e.slice(1)} ist am ${d}.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} hat den Termin auf den ${d} gelegt.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `Bitte denken Sie daran: ${e} findet am ${d} statt.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} erwartet Sie am ${d}.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `Wir freuen uns auf ${e} am ${d}.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} hat den ${d} als nächsten Termin notiert.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `${e.charAt(0).toUpperCase() + e.slice(1)} wurde für den ${d} bestätigt.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} kommt am ${d} vorbei.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `Vergessen Sie nicht: ${e} ist am ${d}.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} schickt die Unterlagen bis zum ${d}.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `Ihr nächster Termin für ${e} ist am ${d}.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} ruft Sie am ${d} zurück.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `Die Frist für ${e} endet am ${d}.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `Laut ${p} ist der ${d} der beste Termin.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `Wir haben ${e} für den ${d} eingeplant.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} erinnert uns an den Termin am ${d}.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `${e.charAt(0).toUpperCase() + e.slice(1)} beginnt pünktlich am ${d}.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} bestätigt: der Termin ist am ${d}.`; },
+                d => { let e = rndFrom(subjectPools.dateEvent); return `Tragen Sie ${e} am ${d} in Ihren Kalender ein.`; },
+                d => { let p = rndFrom(subjectPools.datePerson); return `${p} wartet auf Sie am ${d} um 10 Uhr.`; },
+            ],
+            phone: [
+                p => { let s = rndFrom(subjectPools.phoneService); return `Die Nummer von ${s} ist ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Rufen Sie ${s} unter ${p} an.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `${s.charAt(0).toUpperCase() + s.slice(1)} ist unter ${p} erreichbar.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Bitte notieren Sie die Nummer von ${s}: ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Sie können ${s} jederzeit unter ${p} erreichen.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Die Rückrufnummer von ${s} lautet ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Für Fragen wenden Sie sich an ${s}: ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Meine Nummer für ${s} ist ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `${s.charAt(0).toUpperCase() + s.slice(1)} hat die Nummer ${p} hinterlassen.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Unter ${p} erreichen Sie ${s} direkt.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `${s.charAt(0).toUpperCase() + s.slice(1)} hat mir die Nummer ${p} gegeben.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Bitte rufen Sie ${s} unter ${p} zurück.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Die neue Telefonnummer von ${s} ist ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Ich habe ${s} unter ${p} angerufen.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Die Durchwahl von ${s} lautet ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `${s.charAt(0).toUpperCase() + s.slice(1)} bittet um Rückruf unter ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Für ${s} gilt ab sofort die Nummer ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Speichern Sie ${s} unter der Nummer ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `Die Hotline von ${s} ist ${p}.`; },
+                p => { let s = rndFrom(subjectPools.phoneService); return `${s.charAt(0).toUpperCase() + s.slice(1)} ist ab morgen unter ${p} zu erreichen.`; },
+            ],
+            address: [
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `${c.charAt(0).toUpperCase() + c.slice(1)} geht an ${s} ${n}, PLZ ${z}.`; },
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `Für ${c} brauche ich die Adresse: ${s} ${n}, ${z}.`; },
+                (s, n, z) => `Ich wohne in der ${s} ${n}, Postleitzahl ${z}.`,
+                (s, n, z) => `Bitte schicken Sie das an ${s} ${n}, ${z}.`,
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `${c.charAt(0).toUpperCase() + c.slice(1)} findet in der ${s} ${n}, PLZ ${z} statt.`; },
+                (s, n, z) => `Die neue Adresse lautet ${s} ${n}, Postleitzahl ${z}.`,
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `Für ${c} müssen Sie zur ${s} ${n} in ${z}.`; },
+                (s, n, z) => `Meine Lieferadresse ist ${s} ${n}, ${z}.`,
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `${c.charAt(0).toUpperCase() + c.slice(1)} erwartet Sie in der ${s} ${n}, PLZ ${z}.`; },
+                (s, n, z) => `Das Büro befindet sich in der ${s} ${n}, Postleitzahl ${z}.`,
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `Bitte geben Sie für ${c} die Adresse ${s} ${n}, ${z} an.`; },
+                (s, n, z) => `Der Treffpunkt ist ${s} ${n}, PLZ ${z}.`,
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `Für ${c} notieren Sie: ${s} ${n}, Postleitzahl ${z}.`; },
+                (s, n, z) => `Wir ziehen in die ${s} ${n}, PLZ ${z} um.`,
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `${c.charAt(0).toUpperCase() + c.slice(1)} ist unter der Adresse ${s} ${n}, ${z} gemeldet.`; },
+                (s, n, z) => `Der Fahrer fährt zur ${s} ${n}, Postleitzahl ${z}.`,
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `Für ${c} ist die Anschrift ${s} ${n}, PLZ ${z} einzutragen.`; },
+                (s, n, z) => `Besuchen Sie uns in der ${s} ${n}, ${z}.`,
+                (s, n, z) => { let c = rndFrom(subjectPools.addressContext); return `${c.charAt(0).toUpperCase() + c.slice(1)} befindet sich in der ${s} Nummer ${n}, PLZ ${z}.`; },
+                (s, n, z) => `Die Praxis ist in der ${s} ${n}, Postleitzahl ${z} zu finden.`,
+            ],
+        };
+
+        function pickTemplate(type, ...args) {
+            let pool = templateSentences[type];
+            return pool[rand(0, pool.length - 1)](...args);
+        }
+
+        // ─────────────────────────────────────────
+        // LLM SENTENCE GENERATION (mode: ki)
+        // Prefetch next sentence while user is answering.
+        // ─────────────────────────────────────────
+        let prefetchedData = null;
+        let prefetchPromise = null;
+
+        function buildLLMPrompt(type, args) {
+            const typeDescriptions = {
+                number: `eine Zahl: "${args[0]}"`,
+                price: `ein Preis: "${args[0]} Euro ${args[1]}"`,
+                date: `ein Datum: "${args[0]}"`,
+                phone: `eine Telefonnummer: "${args[0]}"`,
+                address: `eine Adresse: "${args[0]} ${args[1]}, PLZ ${args[2]}"`,
+            };
+            return `Erstelle EINEN einzigen natürlichen deutschen Satz für eine Hörübung.
+Der Satz muss folgendes enthalten: ${typeDescriptions[type]}.
+Der Wert darf NICHT verändert werden — schreib ihn exakt so wie angegeben.
+Variiere den Kontext kreativ: Alltag, Einkaufen, Arzttermin, Behörde, Reise, Familie, Arbeit, etc.
+Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
+        }
+
+        async function fetchLLMSentence(type, args) {
+            try {
+                const res = await fetch("https://api.anthropic.com/v1/messages", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        model: "claude-sonnet-4-20250514",
+                        max_tokens: 120,
+                        messages: [{ role: "user", content: buildLLMPrompt(type, args) }]
+                    })
+                });
+                if (!res.ok) return null;
+                const data = await res.json();
+                return data.content?.find(b => b.type === "text")?.text?.trim() || null;
+            } catch (e) { return null; }
+        }
+
+        function prefetchNextSentence(type, args) {
+            if (currentMode !== 'ki') return;
+            prefetchedData = null;
+            prefetchPromise = fetchLLMSentence(type, args).then(s => { prefetchedData = s; });
+        }
+
+        function setLLMStatus(on) {
+            let el = document.getElementById("llm-status");
+            if (el) el.style.opacity = on ? "1" : "0";
+        }
+
+        // ─────────────────────────────────────────
+        // RAW DATA GENERATORS (shared by all modes)
+        // ─────────────────────────────────────────
         function generateNumber(level) {
             if (level == 1) return rand(1, 99);
             if (level == 2) return rand(100, 999);
             return rand(1000, 999999);
         }
 
-        function generatePrice(level) {
-            let euros = generateNumber(level);
-            let cents = rand(0, 99).toString().padStart(2, '0');
-            return {
-                text: `${euros} Euro ${cents}`,
-                answer: { type: 'price', euros, cents }
-            };
-        }
-
-        function generateDate() {
-            const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
-                "Juli", "August", "September", "Oktober", "November", "Dezember"];
-            let day = rand(1, 28);
-            let mi = rand(0, 11);
-            let year = rand(2000, 2030);
-            // 50% chance: speak month as number instead of name
-            let monthSpoken = Math.random() < 0.5 ? months[mi] : `${mi + 1}.`;
-            return {
-                text: `${day}. ${monthSpoken} ${year}`,
-                answer: { type: 'date', day, month: mi + 1, year }
-            };
-        }
-
-        function generatePhone() {
-            let part1 = "01" + rand(5, 7);
-            let part2 = rand(100, 999);
-            let part3 = rand(10, 99);
-            let part4 = rand(10, 99);
-            return {
-                text: `${part1} ${part2} ${part3} ${part4}`,
-                answer: { type: 'phone', full: `${part1}${part2}${part3}${part4}` }
-            };
-        }
-
-        function generateAddress(level) {
-            const streets = ["Hauptstraße", "Bahnhofstraße", "Goethestraße", "Schillerstraße", "Lindenweg", "Rosenweg"];
-            let street = streets[rand(0, streets.length - 1)];
-            let num = generateNumber(level);
-            let zip = rand(10000, 99999);
-            return {
-                text: `${street} ${num}, ${zip}`,
-                answer: { type: 'address', num: num.toString(), zip: zip.toString() }
-            };
-        }
-
-        function generate() {
-            let typeEl = document.getElementById("type").value;
-            let levelEl = parseInt(document.getElementById("level").value);
-            let effectiveLevel = gameMode ? gameLevel : levelEl;
-
-            let type = typeEl;
-            if (type === "mixed") {
-                const types = ["number", "price", "date", "phone", "address"];
-                type = types[rand(0, types.length - 1)];
+        function buildRaw(type, level) {
+            if (type === 'number') {
+                let n = generateNumber(level);
+                return { type: 'number', args: [n], answer: { type: 'number', val: n.toString() } };
             }
+            if (type === 'price') {
+                let euros = generateNumber(level);
+                let cents = rand(0, 99).toString().padStart(2, '0');
+                return { type: 'price', args: [euros, cents], answer: { type: 'price', euros, cents } };
+            }
+            if (type === 'date') {
+                const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
+                    "Juli", "August", "September", "Oktober", "November", "Dezember"];
+                let day = rand(1, 28), mi = rand(0, 11), year = rand(2000, 2030);
+                let monthSpoken = Math.random() < 0.5 ? months[mi] : `${mi + 1}.`;
+                let dateStr = `${day}. ${monthSpoken} ${year}`;
+                return { type: 'date', args: [dateStr], answer: { type: 'date', day, month: mi + 1, year } };
+            }
+            if (type === 'phone') {
+                let p1 = "01" + rand(5, 7), p2 = rand(100, 999), p3 = rand(10, 99), p4 = rand(10, 99);
+                let spoken = `${p1} ${p2} ${p3} ${p4}`;
+                return { type: 'phone', args: [spoken], answer: { type: 'phone', full: `${p1}${p2}${p3}${p4}` } };
+            }
+            if (type === 'address') {
+                const streets = ["Hauptstraße", "Bahnhofstraße", "Goethestraße", "Schillerstraße", "Lindenweg", "Rosenweg"];
+                let street = streets[rand(0, streets.length - 1)];
+                let num = generateNumber(level), zip = rand(10000, 99999);
+                return { type: 'address', args: [street, num, zip], answer: { type: 'address', num: num.toString(), zip: zip.toString() } };
+            }
+        }
+
+        // ─────────────────────────────────────────
+        // MAIN GENERATE — mode-aware
+        // ─────────────────────────────────────────
+        async function generate() {
+            let typeEl = document.getElementById("type").value;
+            let effectiveLevel = gameMode ? gameLevel : parseInt(document.getElementById("level").value);
+
+            let type = typeEl === "mixed"
+                ? ["number", "price", "date", "phone", "address"][rand(0, 4)]
+                : typeEl;
             currentType = type;
 
-            if (type === "number") { let n = generateNumber(effectiveLevel); return { text: n.toString(), answer: { type: 'number', val: n.toString() } }; }
-            if (type === "price") return generatePrice(effectiveLevel);
-            if (type === "date") return generateDate();
-            if (type === "phone") return generatePhone();
-            if (type === "address") return generateAddress(effectiveLevel);
+            const raw = buildRaw(type, effectiveLevel);
+
+            // ── mode: single ── just speak the raw value
+            if (currentMode === 'single') {
+                setLLMStatus(false);
+                let text;
+                if (type === 'number') text = raw.args[0].toString();
+                else if (type === 'price') text = `${raw.args[0]} Euro ${raw.args[1]}`;
+                else if (type === 'date') text = raw.args[0];
+                else if (type === 'phone') text = raw.args[0];
+                else if (type === 'address') text = `${raw.args[0]} ${raw.args[1]}, ${raw.args[2]}`;
+                return { text, answer: raw.answer };
+            }
+
+            // ── mode: template ── use hardcoded sentence
+            if (currentMode === 'template') {
+                setLLMStatus(false);
+                let text = pickTemplate(type, ...raw.args);
+                return { text, answer: raw.answer };
+            }
+
+            // ── mode: ki ── use prefetched LLM sentence (or fallback to template)
+            if (prefetchPromise) {
+                await Promise.race([prefetchPromise, new Promise(r => setTimeout(r, 700))]);
+            }
+            let text;
+            if (prefetchedData) {
+                text = prefetchedData;
+                prefetchedData = null;
+                setLLMStatus(true);
+            } else {
+                text = pickTemplate(type, ...raw.args); // fallback
+                setLLMStatus(false);
+            }
+
+            // kick off prefetch for the round after this one
+            const nextType = typeEl === "mixed" ? ["number", "price", "date", "phone", "address"][rand(0, 4)] : typeEl;
+            const nextRaw = buildRaw(nextType, effectiveLevel);
+            prefetchNextSentence(nextRaw.type, nextRaw.args);
+
+            return { text, answer: raw.answer };
         }
 
         // ─────────────────────────────────────────
@@ -768,81 +1118,117 @@
         // ─────────────────────────────────────────
         function getHint(type) {
             const hints = {
-                number: "Schreibe nur die Zahl, z.B. 47",
-                price: "Format: 12,99 · 12.99 · 1299 · 12 euro 99",
-                date: "Format: 14.3.2024 · 1432024 · 14 3 2024",
-                phone: "Nur Ziffern ohne Leerzeichen, z.B. 017612345678",
-                address: "Hausnummer + PLZ, z.B. 15 12345 oder nur 15"
+                number: "Nur die Zahl, z.B. 47 — oder ganzen Satz",
+                price: "z.B. 12,50 · 12 50 · oder ganzen Satz",
+                date: "z.B. 14.3.2024 · 14 März 2024 · oder ganzen Satz",
+                phone: "Ziffern, z.B. 017612345678 — oder ganzen Satz",
+                address: "Hausnummer, PLZ, oder ganzen Satz"
             };
             return hints[type] || "";
         }
 
         // ─────────────────────────────────────────
         // ANSWER CHECKING
+        // Strategy: extract the relevant number(s) from whatever the user typed.
+        // This means typing just "4", "4 Kilo", or the full sentence all work.
         // ─────────────────────────────────────────
+
+        // Extract all digit-sequences from a string, return as array of strings
+        function extractNumbers(str) {
+            return (str.match(/\d+/g) || []);
+        }
+
         function isCorrect(user, answer) {
-            user = user.trim().toLowerCase().replace(/\s+/g, ' ');
+            user = user.trim().toLowerCase();
+            // strip trailing punctuation (period, comma, exclamation etc.)
+            user = user.replace(/[.,!?;:]+$/, '').trim();
             if (!user) return false;
 
             const t = answer.type;
+            const nums = extractNumbers(user);
 
+            // ── NUMBER ──
+            // accept: the number anywhere in the input, or as the whole input
             if (t === 'number') {
-                return user === answer.val;
+                return nums.includes(answer.val);
             }
 
+            // ── PRICE ──
+            // need euros + cents somewhere in input (in either order is fine,
+            // but both must appear as separate tokens OR joined with separator)
             if (t === 'price') {
-                let e = answer.euros, c = answer.cents;
-                let cNum = parseInt(c);
-                let valid = [
-                    `${e}${c}`, `${e}.${c}`, `${e},${c}`,
-                    `${e} euro ${c}`, `${e}.${c} euro`, `${e},${c} euro`,
-                    `${e} ${c}`,
-                    // leading-zero variants
-                    `${e}.${parseInt(c)}`, `${e},${parseInt(c)}`
-                ];
-                return valid.includes(user);
+                let e = answer.euros.toString();
+                let c = answer.cents;              // e.g. "05" or "50"
+                let cInt = parseInt(c).toString(); // "5" or "50" (no leading zero)
+
+                // joined: "1250", "12.50", "12,50"
+                let joined = user.replace(/[\s]/g, '');
+                if (joined === `${e}${c}` || joined === `${e}${cInt}`) return true;
+                if (joined === `${e}.${c}` || joined === `${e},${c}`) return true;
+                if (joined === `${e}.${cInt}` || joined === `${e},${cInt}`) return true;
+
+                // separate: both numbers appear somewhere in the text
+                if (nums.includes(e) && (nums.includes(c) || nums.includes(cInt))) return true;
+
+                // "12 euro 50", "12 eur 50", just euros with no cents mentioned
+                if (nums.includes(e) && (c === '00' || cInt === '0')) return true;
+
+                return false;
             }
 
+            // ── DATE ──
             if (t === 'date') {
                 let { day, month, year } = answer;
-                // Normalise: replace month name with its number before comparing
+
+                // Replace written month names with their number first
                 const monthNames = ["januar", "februar", "märz", "april", "mai", "juni",
                     "juli", "august", "september", "oktober", "november", "dezember"];
-                // also common abbreviations
                 const monthAbbr = ["jan", "feb", "mär", "apr", "mai", "jun",
                     "jul", "aug", "sep", "okt", "nov", "dez"];
-                let normalised = user;
+                let norm = user;
                 monthNames.forEach((m, i) => {
-                    normalised = normalised.replace(new RegExp(m, 'gi'), (i + 1).toString());
+                    norm = norm.replace(new RegExp(m, 'gi'), (i + 1).toString());
                 });
                 monthAbbr.forEach((m, i) => {
-                    normalised = normalised.replace(new RegExp('\\b' + m + '\\.?\\b', 'gi'), (i + 1).toString());
+                    norm = norm.replace(new RegExp('\\b' + m + '\\.?\\b', 'gi'), (i + 1).toString());
                 });
 
-                let stripped = normalised.replace(/[.\-\/\s]/g, '');
-                let valid = [
+                const dateNums = extractNumbers(norm);
+
+                // All three present somewhere in the text
+                if (dateNums.includes(day.toString()) &&
+                    (dateNums.includes(month.toString()) || dateNums.includes(month.toString().padStart(2, '0'))) &&
+                    dateNums.includes(year.toString())) return true;
+
+                // Compact: "14032024" or "1432024"
+                let compact = norm.replace(/[.\-\/\s]/g, '');
+                let variants = [
                     `${day}${month}${year}`,
                     `${String(day).padStart(2, '0')}${String(month).padStart(2, '0')}${year}`,
-                    `${day}.${month}.${year}`,
-                    `${day} ${month} ${year}`,
                 ];
-                let strippedValid = valid.map(v => v.replace(/[.\-\/\s]/g, ''));
-                return strippedValid.includes(stripped);
+                if (variants.includes(compact)) return true;
+
+                return false;
             }
 
+            // ── PHONE ──
+            // strip everything except digits and compare
             if (t === 'phone') {
-                let stripped = user.replace(/[\s\-\/\(\)]/g, '');
+                let stripped = user.replace(/\D/g, '');
                 return stripped === answer.full;
             }
 
+            // ── ADDRESS ──
+            // accept: just house number, just zip, or both anywhere in text
             if (t === 'address') {
-                let stripped = user.replace(/[\s]/g, '');
-                // accept just the house number OR number+zip
-                return stripped === answer.num ||
-                    stripped === answer.num + answer.zip ||
-                    stripped === answer.zip + answer.num ||
-                    user === answer.num ||
-                    user === answer.zip;
+                // just house number or just zip as the entire (trimmed) input
+                if (user.replace(/\D/g, '') === answer.num) return true;
+                if (user.replace(/\D/g, '') === answer.zip) return true;
+                // both present in text
+                if (nums.includes(answer.num) && nums.includes(answer.zip)) return true;
+                // only house number present (zip not mentioned)
+                if (nums.length === 1 && nums[0] === answer.num) return true;
+                return false;
             }
 
             return false;
@@ -904,12 +1290,21 @@
             }
         }
 
+        let ttsToastShown = false; // only nag once per session
+
         function showTextFallback(text) {
-            // If no TTS works, briefly flash the text so the trainer is still usable
-            let el = document.getElementById("result");
-            el.textContent = "🔇 " + text;
-            el.className = "wrong";
-            setTimeout(() => { if (el.textContent.startsWith("🔇")) { el.textContent = ""; el.className = ""; } }, 3000);
+            document.getElementById("tts-toast-text").textContent = text;
+            let toast = document.getElementById("tts-toast");
+            toast.style.display = "flex";
+            // after first time, auto-dismiss after 4s so game isn't blocked
+            if (ttsToastShown) {
+                setTimeout(closeTtsToast, 4000);
+            }
+            ttsToastShown = true;
+        }
+
+        function closeTtsToast() {
+            document.getElementById("tts-toast").style.display = "none";
         }
 
         // Stop audio when type changes
@@ -926,8 +1321,9 @@
         // ─────────────────────────────────────────
         // MAIN ACTIONS
         // ─────────────────────────────────────────
-        function play() {
-            let data = generate();
+        async function play() {
+            setResult("⏳", "");
+            let data = await generate();
             currentText = data.text;
             currentAnswer = data.answer;
             speak(currentText);
@@ -1019,17 +1415,18 @@
             updateLives();
         }
 
-        function nextRound() {
+        async function nextRound() {
             if (!gameMode || lives <= 0) { stopGame(); return; }
 
             roundDone = false;
-            let data = generate();
+            const data = await generate();
             currentText = data.text;
             currentAnswer = data.answer;
 
             speak(currentText);
             document.getElementById("answer").value = "";
             document.getElementById("answer").className = "";
+            document.getElementById("answer").focus();
             document.getElementById("hint").textContent = getHint(currentType);
             setResult("", "");
             updateGameLevelBadge();
