@@ -4,7 +4,7 @@ Ich konnte keine gute Ressource finden, die genau diese Art von Übungen fokussi
 
 Und so ist dieses kleine Projekt entstanden. Hoffentlich kann es auch euch beim Deutschlernen helfen.
 
-Für die Beschreibung der Funktionen benutze ich jetzt Englisch, damit ich nicht noch mehr ChatGPT brauche
+Für die Beschreibung der Funktionen lass mich bitte Englisch benutzen, damit ich nicht noch mehr ChatGPT brauche :)
 
 ---
 ## Features
