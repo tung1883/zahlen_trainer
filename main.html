@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Zahlen Hörtraining</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        input,
+        select {
+            font-size: 18px;
+            padding: 5px;
+            margin: 5px;
+        }
+
+        button {
+            font-size: 18px;
+            margin: 10px;
+            padding: 8px 15px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>Zahlen Hörverstehen Trainer</h2>
+
+    <!-- TYPE SELECT -->
+    <select id="type">
+        <option value="number">Zahl</option>
+        <option value="price">Preis</option>
+        <option value="date">Datum</option>
+        <option value="phone">Telefonnummer</option>
+        <option value="address">Adresse</option>
+    </select>
+
+    <!-- LEVEL SELECT -->
+    <select id="level">
+        <option value="1">Level 1 (1–99)</option>
+        <option value="2">Level 2 (100–999)</option>
+        <option value="3">Level 3 (1000+)</option>
+    </select>
+
+    <br>
+
+    <button onclick="play()">🔊 Abspielen</button>
+    <button onclick="replay()">🔁 Nochmal</button>
+
+    <br>
+
+    <input id="answer" placeholder="Antwort eingeben" autofocus>
+    <button onclick="check()">Überprüfen</button>
+
+    <br>
+    <button id="gameBtn" onclick="toggleGame()">🎮 Spiel starten</button>
+
+    <p id="lives"></p>
+    <p id="result"></p>
+
+    <script>
+        let currentText = "";
+        let currentAnswer = "";
+
+        // ===== GENERATORS =====
+        function generateNumber(level) {
+            if (level == 1) return rand(1, 99);
+            if (level == 2) return rand(100, 999);
+            return rand(1000, 999999);
+        }
+
+        function generatePrice(level) {
+            let euros = generateNumber(level);
+            let cents = rand(0, 99).toString().padStart(2, '0');
+
+            let text = `${euros} Euro ${cents}`;
+
+            return {
+                text,
+                answer: { euros, cents }
+            };
+        }
+
+        function generateDate() {
+            const months = [
+                "Januar", "Februar", "März", "April", "Mai", "Juni",
+                "Juli", "August", "September", "Oktober", "November", "Dezember"
+            ];
+
+            let day = rand(1, 28);
+            let monthIndex = rand(0, 11);
+            let year = 2024;
+
+            return {
+                text: `${day}. ${months[monthIndex]} ${year}`,
+                answer: `${day}${monthIndex + 1}${year}`
+            };
+        }
+
+        function generatePhone() {
+            let part1 = "01" + rand(5, 7); // 015, 016, 017
+            let part2 = rand(100, 999);
+            let part3 = rand(10, 99);
+            let part4 = rand(10, 99);
+
+            let text = `${part1} ${part2} ${part3} ${part4}`;
+            let answer = `${part1}${part2}${part3}${part4}`;
+
+            return { text, answer };
+        }
+
+        function generateAddress() {
+            let streets = ["Hauptstraße", "Bahnhofstraße", "Goethestraße"];
+            let street = streets[rand(0, streets.length - 1)];
+            let num = rand(1, 200);
+            return {
+                text: `${street} ${num}`,
+                answer: `${num}` // focus on number
+            };
+        }
+
+        // ===== MAIN GENERATOR =====
+        function generate() {
+            let type = document.getElementById("type").value;
+            let level = document.getElementById("level").value;
+
+            if (type === "number") {
+                let n = generateNumber(level);
+                return { text: n.toString(), answer: n.toString() };
+            }
+
+            if (type === "price") return generatePrice(level);
+            if (type === "date") return generateDate();
+            if (type === "phone") return generatePhone();
+            if (type === "address") return generateAddress();
+        }
+
+        // ===== UTILS =====
+
+        function rand(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        // ===== AUDIO =====
+        function speak(text) {
+            let u = new SpeechSynthesisUtterance(text);
+            u.lang = "de-DE";
+            speechSynthesis.speak(u);
+        }
+
+        // ===== ACTIONS =====
+        function play() {
+            let data = generate();
+            currentText = data.text;
+            currentAnswer = data.answer;
+
+            speak(currentText);
+            document.getElementById("result").innerText = "";
+            document.getElementById("answer").value = "";
+        }
+
+        function replay() {
+            speak(currentText);
+        }
+
+        function check() {
+            clearTimeout(timer);
+
+            let user = document.getElementById("answer").value.trim().toLowerCase();
+
+            // PRICE
+            if (typeof currentAnswer === "object") {
+                let e = currentAnswer.euros;
+                let c = currentAnswer.cents;
+
+                let valid = [
+                    `${e}${c}`,
+                    `${e}.${c}`,
+                    `${e},${c}`,
+                    `${e} euro ${c}`,
+                    `${e}.${c} euro`,
+                    `${e},${c} euro`
+                ];
+
+                if (valid.includes(user)) {
+                    result("Richtig!");
+                    if (gameMode) setTimeout(nextRound, 1000);
+                } else {
+                    if (gameMode) loseLife("Falsch!");
+                    else result(`Falsch! → ${currentText}`);
+                }
+                return;
+            }
+
+            // NORMAL
+            if (user === currentAnswer) {
+                result("Richtig!");
+                if (gameMode) setTimeout(nextRound, 1000);
+            } else {
+                if (gameMode) loseLife("Falsch!");
+                else result(`Falsch! → ${currentText}`);
+            }
+        }
+
+        function result(text) {
+            document.getElementById("result").innerText = text;
+        }
+
+        let lives = 3;
+        let gameMode = false;
+        let timer = null;
+        let timeLimit = 5000;
+
+        function toggleGame() {
+            if (gameMode) {
+                stopGame();
+            } else {
+                startGame();
+            }
+        }
+
+        function startGame() {
+            lives = 3;
+            timeLimit = 5000;
+            gameMode = true;
+            answered = false;
+            clearTimeout(timer);
+            speechSynthesis.cancel();
+            document.getElementById("gameBtn").innerText = "Stoppen";
+
+            updateLives();
+            nextRound();
+        }
+
+        function stopGame() {
+            clearTimeout(timer);
+            speechSynthesis.cancel();
+            lives = 3;
+            gameMode = false;
+            timeLimit = 5000;
+            document.getElementById("result").innerText = "";
+            document.getElementById("gameBtn").innerText = "🎮 Spiel starten";
+            document.getElementById("lives").innerText = "";
+        }
+
+        function nextRound() {
+            if (!gameMode) return;
+
+            if (lives <= 0) {   
+                stopGame();
+                return;
+            }
+
+            answered = false;
+            let data = generate();
+            currentText = data.text;
+            currentAnswer = data.answer;
+
+            speak(currentText);
+
+            document.getElementById("answer").value = "";
+            document.getElementById("result").innerText = "";
+
+            clearTimeout(timer);
+
+            timer = setTimeout(() => {
+                loseLife("⏱ Zu langsam!");
+            }, timeLimit);
+
+            // speed up (min 2 seconds)
+            // timeLimit = Math.max(2000, timeLimit - 200);
+        }
+
+        function loseLife(msg) {
+            lives--;
+            updateLives();
+            result(`${msg} → ${currentText}`);
+
+            setTimeout(nextRound, 1500);
+        }   
+
+        function updateLives() {
+            document.getElementById("lives").innerText =
+                "❤️".repeat(lives) + "🖤".repeat(3 - lives);
+        }
+
+        let answered = false;
+        document.getElementById("answer").addEventListener("input", autoCheck);
+        
+        function autoCheck() {
+            if (!gameMode) return;
+
+            let user = document.getElementById("answer").value.trim().toLowerCase();
+
+            // PRICE
+            if (typeof currentAnswer === "object") {
+                let e = currentAnswer.euros;
+                let c = currentAnswer.cents;
+
+                let valid = [
+                    `${e}${c}`,
+                    `${e}.${c}`,
+                    `${e},${c}`,
+                    `${e} euro ${c}`,
+                    `${e}.${c} euro`,
+                    `${e},${c} euro`
+                ];
+
+                if (valid.includes(user)) {
+                    clearTimeout(timer);
+                    result("Richtig!");
+                    setTimeout(nextRound, 800);
+                }
+                return;
+            }
+
+            // NORMAL
+            if (user === currentAnswer) {
+                clearTimeout(timer);
+                result("Richtig!");
+                setTimeout(nextRound, 800);
+            }
+        }
+        
+    </script>
+
+</body>
+
+</html>
