@@ -53,11 +53,10 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 24px 16px 48px;
+            padding: 1.5rem 1rem 3rem;
             transition: background 0.3s, color 0.3s;
         }
 
-        /* noise texture overlay */
         body::before {
             content: '';
             position: fixed;
@@ -72,7 +71,7 @@
             position: relative;
             z-index: 1;
             width: 100%;
-            max-width: 480px;
+            max-width: 30rem;
         }
 
         /* ── HEADER ── */
@@ -80,12 +79,12 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 28px;
+            margin-bottom: 1.75rem;
         }
 
         .logo {
             font-family: 'Space Mono', monospace;
-            font-size: 13px;
+            font-size: 1.1rem;
             letter-spacing: 0.15em;
             color: var(--accent);
             text-transform: uppercase;
@@ -99,9 +98,9 @@
             background-color: var(--surface2);
             border: 1px solid var(--border);
             color: var(--text);
-            border-radius: 20px;
-            padding: 6px 14px;
-            font-size: 13px;
+            border-radius: 1.25rem;
+            padding: 0.375rem 0.875rem;
+            font-size: 0.8125rem;
             cursor: pointer;
             font-family: 'DM Sans', sans-serif;
             transition: border-color 0.2s, background 0.2s;
@@ -115,46 +114,48 @@
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 16px;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         /* ── SELECTORS ── */
         .selectors {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 0.625rem;
         }
 
         .sel-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 0.3rem;
         }
 
         .sel-group label {
-            font-size: 11px;
+            font-size: 0.6875rem;
             letter-spacing: 0.1em;
             text-transform: uppercase;
             color: var(--muted);
             font-family: 'Space Mono', monospace;
+            white-space: nowrap;
         }
 
         select {
-            background: var(--surface2);
+            background-color: var(--surface2);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.75rem center;
             color: var(--text);
             border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 9px 12px;
-            font-size: 14px;
+            border-radius: 0.5rem;
+            padding: 0.5625rem 2.25rem 0.5625rem 0.75rem;
+            font-size: 0.875rem;
             cursor: pointer;
             font-family: 'DM Sans', sans-serif;
             appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6b80' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 30px;
+            -webkit-appearance: none;
+            width: 100%;
             transition: border-color 0.2s;
         }
 
@@ -166,15 +167,15 @@
         /* ── PLAY BUTTONS ── */
         .play-row {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 0.625rem;
+            margin-top: 1.25rem;
         }
 
         .btn-play {
             flex: 1;
-            padding: 14px;
-            border-radius: 10px;
-            font-size: 15px;
+            padding: 0.875rem;
+            border-radius: 0.625rem;
+            font-size: 0.9375rem;
             font-family: 'DM Sans', sans-serif;
             font-weight: 700;
             cursor: pointer;
@@ -204,17 +205,18 @@
         /* ── ANSWER ── */
         .answer-row {
             display: flex;
-            gap: 10px;
+            gap: 0.625rem;
         }
 
         #answer {
-            flex: 1;
-            padding: 13px 16px;
-            border-radius: 10px;
+            flex: 1 1 0;
+            min-width: 0;
+            padding: 0.8125rem 1rem;
+            border-radius: 0.625rem;
             background: var(--surface2);
             color: var(--text);
             border: 1px solid var(--border);
-            font-size: 18px;
+            font-size: 1.125rem;
             font-family: 'Space Mono', monospace;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
@@ -222,26 +224,27 @@
         #answer:focus {
             outline: none;
             border-color: var(--accent);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 15%, transparent);
+            box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--accent) 15%, transparent);
         }
 
         #answer.correct-flash {
             border-color: var(--correct);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--correct) 15%, transparent);
+            box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--correct) 15%, transparent);
         }
 
         #answer.wrong-flash {
             border-color: var(--wrong);
-            box-shadow: 0 0 0 3px color-mix(in srgb, var(--wrong) 15%, transparent);
+            box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--wrong) 15%, transparent);
         }
 
         .btn-check {
-            padding: 13px 18px;
-            border-radius: 10px;
+            flex-shrink: 0;
+            padding: 0.8125rem 1.125rem;
+            border-radius: 0.625rem;
             background: var(--surface2);
             color: var(--text);
             border: 1px solid var(--border);
-            font-size: 14px;
+            font-size: 0.875rem;
             font-weight: 700;
             cursor: pointer;
             font-family: 'DM Sans', sans-serif;
@@ -255,11 +258,11 @@
 
         /* ── RESULT ── */
         #result {
-            min-height: 28px;
-            font-size: 15px;
+            min-height: 1.75rem;
+            font-size: 0.9375rem;
             font-weight: 700;
             text-align: center;
-            padding: 4px;
+            padding: 0.25rem;
             font-family: 'Space Mono', monospace;
             transition: color 0.2s;
         }
@@ -272,16 +275,37 @@
             color: var(--wrong);
         }
 
+        /* ── SNAKE CANVAS ── */
+        .snake-wrap {
+            position: relative;
+            height: 1.5rem;
+            margin: 0.5rem 0 0;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+
+        #snakeCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+
+        #snakeCanvas.visible {
+            opacity: 1;
+        }
+
         /* ── GAME PANEL ── */
         .game-card {
             background: var(--surface);
             border: 1px solid var(--border);
-            border-radius: 16px;
+            border-radius: 1rem;
             overflow: hidden;
         }
 
         .game-header {
-            padding: 16px 20px;
+            padding: 1rem 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -290,16 +314,16 @@
 
         .game-title {
             font-family: 'Space Mono', monospace;
-            font-size: 12px;
+            font-size: 0.75rem;
             letter-spacing: 0.12em;
             text-transform: uppercase;
             color: var(--muted);
         }
 
         .btn-game {
-            padding: 8px 18px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 0.5rem 1.125rem;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
             font-weight: 700;
             cursor: pointer;
             font-family: 'DM Sans', sans-serif;
@@ -326,28 +350,28 @@
         }
 
         .game-body {
-            padding: 16px 20px;
+            padding: 1rem 1.25rem;
         }
 
         /* stats row */
         .stats-row {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-bottom: 16px;
+            gap: 0.625rem;
+            margin-bottom: 1rem;
         }
 
         .stat-box {
             background: var(--surface2);
-            border-radius: 10px;
-            padding: 10px;
+            border-radius: 0.625rem;
+            padding: 0.625rem;
             text-align: center;
             border: 1px solid var(--border);
         }
 
         .stat-val {
             font-family: 'Space Mono', monospace;
-            font-size: 20px;
+            font-size: 1.25rem;
             font-weight: 700;
             color: var(--accent);
             line-height: 1.2;
@@ -358,43 +382,43 @@
         }
 
         .stat-lbl {
-            font-size: 10px;
+            font-size: 0.625rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--muted);
-            margin-top: 3px;
+            margin-top: 0.1875rem;
         }
 
         /* timer bar */
         .timer-track {
-            height: 5px;
+            height: 0.3125rem;
             background: var(--surface2);
-            border-radius: 3px;
+            border-radius: 0.1875rem;
             overflow: hidden;
-            margin-bottom: 14px;
+            margin-bottom: 0.875rem;
         }
 
         .timer-bar {
             height: 100%;
             width: 100%;
             background: var(--accent);
-            border-radius: 3px;
+            border-radius: 0.1875rem;
             transition: background 0.3s;
             transform-origin: left;
         }
 
         /* lives */
         #lives {
-            font-size: 22px;
+            font-size: 1.375rem;
             text-align: center;
-            letter-spacing: 4px;
+            letter-spacing: 0.25rem;
         }
 
         /* score & streak */
         .score-row {
             display: flex;
             justify-content: space-between;
-            font-size: 12px;
+            font-size: 0.75rem;
             color: var(--muted);
             font-family: 'Space Mono', monospace;
         }
@@ -406,31 +430,31 @@
         /* level badge */
         .level-badge {
             display: inline-block;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 11px;
+            padding: 0.1875rem 0.625rem;
+            border-radius: 1.25rem;
+            font-size: 0.6875rem;
             font-family: 'Space Mono', monospace;
             border: 1px solid var(--accent3);
             color: var(--accent3);
             letter-spacing: 0.08em;
-            margin-left: 8px;
+            margin-left: 0.5rem;
         }
 
         /* ── HISTORY ── */
         .history-title {
-            font-size: 11px;
+            font-size: 0.6875rem;
             text-transform: uppercase;
             letter-spacing: 0.1em;
             color: var(--muted);
             font-family: 'Space Mono', monospace;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
         }
 
         #history-list {
             display: flex;
             flex-direction: column-reverse;
-            gap: 5px;
-            max-height: 140px;
+            gap: 0.3125rem;
+            max-height: 8.75rem;
             overflow-y: auto;
         }
 
@@ -438,21 +462,21 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 7px 10px;
-            border-radius: 8px;
-            font-size: 13px;
+            padding: 0.4375rem 0.625rem;
+            border-radius: 0.5rem;
+            font-size: 0.8125rem;
             background: var(--surface2);
         }
 
         .h-item .h-q {
             font-family: 'Space Mono', monospace;
-            font-size: 12px;
+            font-size: 0.75rem;
             color: var(--muted);
         }
 
         .h-item .h-a {
             font-family: 'Space Mono', monospace;
-            font-size: 13px;
+            font-size: 0.8125rem;
         }
 
         .h-item.ok .h-a {
@@ -464,9 +488,9 @@
         }
 
         .h-badge {
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 4px;
+            font-size: 0.625rem;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
         }
 
         .h-badge.ok {
@@ -481,15 +505,15 @@
 
         /* ── TOOLTIP (hint) ── */
         .hint {
-            font-size: 12px;
+            font-size: 0.75rem;
             color: var(--muted);
             text-align: center;
-            padding: 6px 0 0;
+            padding: 0.375rem 0 0;
         }
 
         /* scrollbar */
         ::-webkit-scrollbar {
-            width: 4px;
+            width: 0.25rem;
         }
 
         ::-webkit-scrollbar-track {
@@ -498,7 +522,7 @@
 
         ::-webkit-scrollbar-thumb {
             background: var(--border);
-            border-radius: 2px;
+            border-radius: 0.125rem;
         }
 
         /* pulse anim for ♥ */
@@ -528,12 +552,12 @@
 
             20%,
             60% {
-                transform: translateX(-6px)
+                transform: translateX(-0.375rem)
             }
 
             40%,
             80% {
-                transform: translateX(6px)
+                transform: translateX(0.375rem)
             }
         }
 
@@ -561,8 +585,8 @@
         }
 
         footer {
-            margin-top: 32px;
-            font-size: 12px;
+            margin-top: 2rem;
+            font-size: 0.75rem;
             color: var(--muted);
             font-family: 'Space Mono', monospace;
             text-align: center;
@@ -571,15 +595,15 @@
         /* ── MODE TOGGLE ── */
         .mode-row {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
-            margin-bottom: 16px;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.375rem;
+            margin-bottom: 1rem;
         }
 
         .mode-btn {
-            padding: 9px 6px;
-            border-radius: 8px;
-            font-size: 12px;
+            padding: 0.75rem 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.9375rem;
             font-family: 'DM Sans', sans-serif;
             font-weight: 600;
             cursor: pointer;
@@ -601,12 +625,6 @@
             border-color: var(--accent);
             color: var(--accent);
         }
-
-        .mode-btn#mode-ki.active {
-            background: color-mix(in srgb, var(--accent3) 15%, transparent);
-            border-color: var(--accent3);
-            color: var(--accent3);
-        }
     </style>
 </head>
 
@@ -625,7 +643,6 @@
             <div class="mode-row">
                 <button class="mode-btn active" id="mode-single" onclick="setMode('single')">🔢 Einzeln</button>
                 <button class="mode-btn" id="mode-template" onclick="setMode('template')">💬 Sätze</button>
-                <button class="mode-btn" id="mode-ki" onclick="setMode('ki')">✨ KI-Sätze</button>
             </div>
 
             <div class="selectors">
@@ -663,6 +680,9 @@
                 <button class="btn-check" onclick="check()">✓ OK</button>
             </div>
             <div class="hint" id="hint"></div>
+            <div class="snake-wrap">
+                <canvas id="snakeCanvas"></canvas>
+            </div>
             <p id="result"></p>
         </div>
 
@@ -676,12 +696,10 @@
                 <button class="btn-game" id="gameBtn" onclick="toggleGame()">▶ Starten</button>
             </div>
             <div class="game-body">
-                <!-- timer bar -->
                 <div class="timer-track">
                     <div class="timer-bar" id="timerBar"></div>
                 </div>
 
-                <!-- stats -->
                 <div class="stats-row">
                     <div class="stat-box">
                         <div class="stat-val" id="stat-score">0</div>
@@ -697,52 +715,37 @@
                     </div>
                 </div>
 
-                <!-- lives -->
                 <p id="lives"></p>
 
-                <!-- history -->
-                <div style="margin-top:14px">
+                <div style="margin-top:0.875rem">
                     <div class="history-title">Verlauf</div>
                     <div id="history-list"></div>
                 </div>
             </div>
         </div>
 
-        <footer>de-DE · von tung1883 · v3</footer>
+        <footer>de-DE · von tung1883 · v4</footer>
     </div>
 
     <!-- TTS FALLBACK TOAST -->
-    <div id="tts-toast" style="
-  display:none; position:fixed; inset:0; z-index:999;
-  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
-  align-items: center; justify-content: center; padding: 24px;
-">
-        <div style="
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 28px 24px; max-width: 380px; width: 100%;
-    text-align: center; font-family: 'DM Sans', sans-serif;
-  ">
-            <div style="font-size: 48px; margin-bottom: 12px;">🔇</div>
-            <div style="font-size: 13px; color: var(--muted); font-family: 'Space Mono', monospace;
-      text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px;">
-                Audio nicht verfügbar
+    <div id="tts-toast"
+        style="display:none; position:fixed; inset:0; z-index:999; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:1.5rem;">
+        <div
+            style="background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:1.75rem 1.5rem; max-width:23.75rem; width:100%; text-align:center; font-family:'DM Sans',sans-serif;">
+            <div style="font-size:3rem; margin-bottom:0.75rem;">🔇</div>
+            <div
+                style="font-size:0.8125rem; color:var(--muted); font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.625rem;">
+                Audio nicht verfügbar</div>
+            <div id="tts-toast-text"
+                style="font-family:'Space Mono',monospace; font-size:0.9375rem; color:var(--accent); line-height:1.6; background:var(--surface2); border-radius:0.5rem; padding:0.75rem 0.875rem; margin-bottom:1rem; border:1px solid var(--border);">
             </div>
-            <div id="tts-toast-text" style="
-      font-family: 'Space Mono', monospace; font-size: 15px;
-      color: var(--accent); line-height: 1.6;
-      background: var(--surface2); border-radius: 8px;
-      padding: 12px 14px; margin-bottom: 16px;
-      border: 1px solid var(--border);
-    "></div>
-            <div style="font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.5;">
+            <div style="font-size:0.75rem; color:var(--muted); margin-bottom:1.25rem; line-height:1.5;">
                 💡 Für Audio: HTML-Datei direkt im Browser öffnen<br>
                 <span style="color:var(--accent3)">(Chrome / Firefox / Safari)</span>
             </div>
-            <button onclick="closeTtsToast()" style="
-      padding: 10px 28px; border-radius: 8px; font-size: 14px; font-weight: 700;
-      background: var(--accent); color: #0d0d0f; border: none; cursor: pointer;
-      font-family: 'DM Sans', sans-serif;
-    ">OK, verstanden</button>
+            <button onclick="closeTtsToast()"
+                style="padding:0.625rem 1.75rem; border-radius:0.5rem; font-size:0.875rem; font-weight:700; background:var(--accent); color:#0d0d0f; border:none; cursor:pointer; font-family:'DM Sans',sans-serif;">OK,
+                verstanden</button>
         </div>
     </div>
 
@@ -758,48 +761,36 @@
         let score = 0;
         let streak = 0;
         let bestStreak = 0;
-        let gameLevel = 1;        // dynamic difficulty (1-3)
-        let correctInRow = 0;     // correct answers towards next level
+        let gameLevel = 1;
+        let correctInRow = 0;
         let timer = null;
         let timerAnim = null;
-        let timeLimit = 7000;     // ms, will decrease
+        let timeLimit = 7000;
         let timerStart = 0;
-        const LEVEL_UP_THRESHOLD = 5;   // correct answers to level up
-        const LEVEL_DOWN_THRESHOLD = 3; // wrong answers to level down
+        const LEVEL_UP_THRESHOLD = 5;
+        const LEVEL_DOWN_THRESHOLD = 3;
         let wrongInRow = 0;
 
-        // ─────────────────────────────────────────
-        // GENERATORS
-        // ─────────────────────────────────────────
         function rand(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
         // ─────────────────────────────────────────
         // MODE
-        // single   — speak only the raw value (number, price, etc.)
-        // template — wrap in a hardcoded German sentence template
-        // ki       — Claude generates a fresh sentence each round
         // ─────────────────────────────────────────
         let currentMode = 'single';
 
         function setMode(mode) {
             currentMode = mode;
-            ['single', 'template', 'ki'].forEach(m => {
+            ['single', 'template'].forEach(m => {
                 document.getElementById('mode-' + m).classList.toggle('active', m === mode);
             });
-            // reset prefetch when switching to/from KI
-            prefetchedData = null;
-            prefetchPromise = null;
             onTypeChange();
         }
 
         // ─────────────────────────────────────────
-        // SENTENCE TEMPLATES (mode: template)
-        // 20 structures per type, each with varied subjects/objects
+        // SENTENCE TEMPLATES
         // ─────────────────────────────────────────
-
-        // Subjects/objects pools — picked randomly to vary sentences
         const subjectPools = {
             number: [
                 "Der Lehrer", "Die Mutter", "Mein Vater", "Der Arzt", "Die Kassiererin",
@@ -845,9 +836,7 @@
             ]
         };
 
-        function rndFrom(pool) {
-            return pool[rand(0, pool.length - 1)];
-        }
+        function rndFrom(pool) { return pool[rand(0, pool.length - 1)]; }
 
         const templateSentences = {
             number: [
@@ -968,57 +957,7 @@
         }
 
         // ─────────────────────────────────────────
-        // LLM SENTENCE GENERATION (mode: ki)
-        // Prefetch next sentence while user is answering.
-        // ─────────────────────────────────────────
-        let prefetchedData = null;
-        let prefetchPromise = null;
-
-        function buildLLMPrompt(type, args) {
-            const typeDescriptions = {
-                number: `eine Zahl: "${args[0]}"`,
-                price: `ein Preis: "${args[0]} Euro ${args[1]}"`,
-                date: `ein Datum: "${args[0]}"`,
-                phone: `eine Telefonnummer: "${args[0]}"`,
-                address: `eine Adresse: "${args[0]} ${args[1]}, PLZ ${args[2]}"`,
-            };
-            return `Erstelle EINEN einzigen natürlichen deutschen Satz für eine Hörübung.
-Der Satz muss folgendes enthalten: ${typeDescriptions[type]}.
-Der Wert darf NICHT verändert werden — schreib ihn exakt so wie angegeben.
-Variiere den Kontext kreativ: Alltag, Einkaufen, Arzttermin, Behörde, Reise, Familie, Arbeit, etc.
-Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
-        }
-
-        async function fetchLLMSentence(type, args) {
-            try {
-                const res = await fetch("https://api.anthropic.com/v1/messages", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: "claude-sonnet-4-20250514",
-                        max_tokens: 120,
-                        messages: [{ role: "user", content: buildLLMPrompt(type, args) }]
-                    })
-                });
-                if (!res.ok) return null;
-                const data = await res.json();
-                return data.content?.find(b => b.type === "text")?.text?.trim() || null;
-            } catch (e) { return null; }
-        }
-
-        function prefetchNextSentence(type, args) {
-            if (currentMode !== 'ki') return;
-            prefetchedData = null;
-            prefetchPromise = fetchLLMSentence(type, args).then(s => { prefetchedData = s; });
-        }
-
-        function setLLMStatus(on) {
-            let el = document.getElementById("llm-status");
-            if (el) el.style.opacity = on ? "1" : "0";
-        }
-
-        // ─────────────────────────────────────────
-        // RAW DATA GENERATORS (shared by all modes)
+        // RAW DATA GENERATORS
         // ─────────────────────────────────────────
         function generateNumber(level) {
             if (level == 1) return rand(1, 99);
@@ -1037,8 +976,7 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
                 return { type: 'price', args: [euros, cents], answer: { type: 'price', euros, cents } };
             }
             if (type === 'date') {
-                const months = ["Januar", "Februar", "März", "April", "Mai", "Juni",
-                    "Juli", "August", "September", "Oktober", "November", "Dezember"];
+                const months = ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"];
                 let day = rand(1, 28), mi = rand(0, 11), year = rand(2000, 2030);
                 let monthSpoken = Math.random() < 0.5 ? months[mi] : `${mi + 1}.`;
                 let dateStr = `${day}. ${monthSpoken} ${year}`;
@@ -1060,7 +998,7 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
         // ─────────────────────────────────────────
         // MAIN GENERATE — mode-aware
         // ─────────────────────────────────────────
-        async function generate() {
+        function generate() {
             let typeEl = document.getElementById("type").value;
             let effectiveLevel = gameMode ? gameLevel : parseInt(document.getElementById("level").value);
 
@@ -1071,9 +1009,7 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
 
             const raw = buildRaw(type, effectiveLevel);
 
-            // ── mode: single ── just speak the raw value
             if (currentMode === 'single') {
-                setLLMStatus(false);
                 let text;
                 if (type === 'number') text = raw.args[0].toString();
                 else if (type === 'price') text = `${raw.args[0]} Euro ${raw.args[1]}`;
@@ -1083,33 +1019,8 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
                 return { text, answer: raw.answer };
             }
 
-            // ── mode: template ── use hardcoded sentence
-            if (currentMode === 'template') {
-                setLLMStatus(false);
-                let text = pickTemplate(type, ...raw.args);
-                return { text, answer: raw.answer };
-            }
-
-            // ── mode: ki ── use prefetched LLM sentence (or fallback to template)
-            if (prefetchPromise) {
-                await Promise.race([prefetchPromise, new Promise(r => setTimeout(r, 700))]);
-            }
-            let text;
-            if (prefetchedData) {
-                text = prefetchedData;
-                prefetchedData = null;
-                setLLMStatus(true);
-            } else {
-                text = pickTemplate(type, ...raw.args); // fallback
-                setLLMStatus(false);
-            }
-
-            // kick off prefetch for the round after this one
-            const nextType = typeEl === "mixed" ? ["number", "price", "date", "phone", "address"][rand(0, 4)] : typeEl;
-            const nextRaw = buildRaw(nextType, effectiveLevel);
-            prefetchNextSentence(nextRaw.type, nextRaw.args);
-
-            return { text, answer: raw.answer };
+            // template mode
+            return { text: pickTemplate(type, ...raw.args), answer: raw.answer };
         }
 
         // ─────────────────────────────────────────
@@ -1128,104 +1039,58 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
 
         // ─────────────────────────────────────────
         // ANSWER CHECKING
-        // Strategy: extract the relevant number(s) from whatever the user typed.
-        // This means typing just "4", "4 Kilo", or the full sentence all work.
         // ─────────────────────────────────────────
-
-        // Extract all digit-sequences from a string, return as array of strings
-        function extractNumbers(str) {
-            return (str.match(/\d+/g) || []);
-        }
+        function extractNumbers(str) { return (str.match(/\d+/g) || []); }
 
         function isCorrect(user, answer) {
             user = user.trim().toLowerCase();
-            // strip trailing punctuation (period, comma, exclamation etc.)
             user = user.replace(/[.,!?;:]+$/, '').trim();
             if (!user) return false;
 
             const t = answer.type;
             const nums = extractNumbers(user);
 
-            // ── NUMBER ──
-            // accept: the number anywhere in the input, or as the whole input
-            if (t === 'number') {
-                return nums.includes(answer.val);
-            }
+            if (t === 'number') return nums.includes(answer.val);
 
-            // ── PRICE ──
-            // need euros + cents somewhere in input (in either order is fine,
-            // but both must appear as separate tokens OR joined with separator)
             if (t === 'price') {
                 let e = answer.euros.toString();
-                let c = answer.cents;              // e.g. "05" or "50"
-                let cInt = parseInt(c).toString(); // "5" or "50" (no leading zero)
-
-                // joined: "1250", "12.50", "12,50"
+                let c = answer.cents;
+                let cInt = parseInt(c).toString();
                 let joined = user.replace(/[\s]/g, '');
                 if (joined === `${e}${c}` || joined === `${e}${cInt}`) return true;
                 if (joined === `${e}.${c}` || joined === `${e},${c}`) return true;
                 if (joined === `${e}.${cInt}` || joined === `${e},${cInt}`) return true;
-
-                // separate: both numbers appear somewhere in the text
                 if (nums.includes(e) && (nums.includes(c) || nums.includes(cInt))) return true;
-
-                // "12 euro 50", "12 eur 50", just euros with no cents mentioned
                 if (nums.includes(e) && (c === '00' || cInt === '0')) return true;
-
                 return false;
             }
 
-            // ── DATE ──
             if (t === 'date') {
                 let { day, month, year } = answer;
-
-                // Replace written month names with their number first
-                const monthNames = ["januar", "februar", "märz", "april", "mai", "juni",
-                    "juli", "august", "september", "oktober", "november", "dezember"];
-                const monthAbbr = ["jan", "feb", "mär", "apr", "mai", "jun",
-                    "jul", "aug", "sep", "okt", "nov", "dez"];
+                const monthNames = ["januar", "februar", "märz", "april", "mai", "juni", "juli", "august", "september", "oktober", "november", "dezember"];
+                const monthAbbr = ["jan", "feb", "mär", "apr", "mai", "jun", "jul", "aug", "sep", "okt", "nov", "dez"];
                 let norm = user;
-                monthNames.forEach((m, i) => {
-                    norm = norm.replace(new RegExp(m, 'gi'), (i + 1).toString());
-                });
-                monthAbbr.forEach((m, i) => {
-                    norm = norm.replace(new RegExp('\\b' + m + '\\.?\\b', 'gi'), (i + 1).toString());
-                });
-
+                monthNames.forEach((m, i) => { norm = norm.replace(new RegExp(m, 'gi'), (i + 1).toString()); });
+                monthAbbr.forEach((m, i) => { norm = norm.replace(new RegExp('\\b' + m + '\\.?\\b', 'gi'), (i + 1).toString()); });
                 const dateNums = extractNumbers(norm);
-
-                // All three present somewhere in the text
                 if (dateNums.includes(day.toString()) &&
                     (dateNums.includes(month.toString()) || dateNums.includes(month.toString().padStart(2, '0'))) &&
                     dateNums.includes(year.toString())) return true;
-
-                // Compact: "14032024" or "1432024"
                 let compact = norm.replace(/[.\-\/\s]/g, '');
-                let variants = [
-                    `${day}${month}${year}`,
-                    `${String(day).padStart(2, '0')}${String(month).padStart(2, '0')}${year}`,
-                ];
+                let variants = [`${day}${month}${year}`, `${String(day).padStart(2, '0')}${String(month).padStart(2, '0')}${year}`];
                 if (variants.includes(compact)) return true;
-
                 return false;
             }
 
-            // ── PHONE ──
-            // strip everything except digits and compare
             if (t === 'phone') {
                 let stripped = user.replace(/\D/g, '');
                 return stripped === answer.full;
             }
 
-            // ── ADDRESS ──
-            // accept: just house number, just zip, or both anywhere in text
             if (t === 'address') {
-                // just house number or just zip as the entire (trimmed) input
                 if (user.replace(/\D/g, '') === answer.num) return true;
                 if (user.replace(/\D/g, '') === answer.zip) return true;
-                // both present in text
                 if (nums.includes(answer.num) && nums.includes(answer.zip)) return true;
-                // only house number present (zip not mentioned)
                 if (nums.length === 1 && nums[0] === answer.num) return true;
                 return false;
             }
@@ -1235,18 +1100,11 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
 
         // ─────────────────────────────────────────
         // AUDIO — multi-strategy TTS
-        // Strategy 1: Web Speech API (Chrome desktop, Firefox, Safari)
-        // Strategy 2: window.Android.speak() — native JavascriptInterface bridge
-        //             (host app must expose this via addJavascriptInterface)
-        // Strategy 3: Google Translate TTS audio element fallback
-        //             (works in most WebViews that can play audio)
         // ─────────────────────────────────────────
-        let ttsAudio = null; // for strategy 3
+        let ttsAudio = null;
 
         function speak(text) {
             stopAudio();
-
-            // Strategy 1: standard Web Speech API
             if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
                 try {
                     let u = new SpeechSynthesisUtterance(text);
@@ -1254,51 +1112,35 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
                     u.rate = 0.92;
                     speechSynthesis.speak(u);
                     return;
-                } catch (e) { /* fall through */ }
+                } catch (e) { }
             }
-
-            // Strategy 2: native Android bridge (host app exposes window.Android.speak)
             if (window.Android && typeof window.Android.speak === 'function') {
-                try { window.Android.speak(text, "de-DE"); return; } catch (e) { /* fall through */ }
+                try { window.Android.speak(text, "de-DE"); return; } catch (e) { }
             }
-
-            // Strategy 3: Google Translate TTS audio (requires internet, works in most WebViews)
             try {
                 let encoded = encodeURIComponent(text);
                 let url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=de&client=tw-ob`;
                 ttsAudio = new Audio(url);
-                ttsAudio.play().catch(() => {
-                    // Strategy 4: silent fallback — show text visually so user can still read it
-                    showTextFallback(text);
-                });
+                ttsAudio.play().catch(() => showTextFallback(text));
             } catch (e) {
                 showTextFallback(text);
             }
         }
 
         function stopAudio() {
-            // Stop Web Speech API
             if (typeof speechSynthesis !== 'undefined') {
                 try { speechSynthesis.cancel(); } catch (e) { }
             }
-            // Stop audio element
-            if (ttsAudio) {
-                ttsAudio.pause();
-                ttsAudio.src = "";
-                ttsAudio = null;
-            }
+            if (ttsAudio) { ttsAudio.pause(); ttsAudio.src = ""; ttsAudio = null; }
         }
 
-        let ttsToastShown = false; // only nag once per session
+        let ttsToastShown = false;
 
         function showTextFallback(text) {
             document.getElementById("tts-toast-text").textContent = text;
             let toast = document.getElementById("tts-toast");
             toast.style.display = "flex";
-            // after first time, auto-dismiss after 4s so game isn't blocked
-            if (ttsToastShown) {
-                setTimeout(closeTtsToast, 4000);
-            }
+            if (ttsToastShown) setTimeout(closeTtsToast, 4000);
             ttsToastShown = true;
         }
 
@@ -1306,7 +1148,6 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             document.getElementById("tts-toast").style.display = "none";
         }
 
-        // Stop audio when type changes
         function onTypeChange() {
             stopAudio();
             currentText = "";
@@ -1314,15 +1155,17 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             document.getElementById("answer").value = "";
             document.getElementById("answer").className = "";
             setResult("", "");
-            document.getElementById("hint").textContent = "";
+            let type = document.getElementById("type").value;
+            if (type === "mixed") type = "number";
+            document.getElementById("hint").textContent = getHint(type);
         }
 
         // ─────────────────────────────────────────
         // MAIN ACTIONS
         // ─────────────────────────────────────────
         async function play() {
-            setResult("⏳", "");
-            let data = await generate();
+            setResult("", "");
+            let data = generate();
             currentText = data.text;
             currentAnswer = data.answer;
             speak(currentText);
@@ -1347,11 +1190,8 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
                 shakeInput();
                 if (gameMode) onWrong();
                 else {
-                    if (!currentText) {
-                        setResult("Bitte erst auf Abspielen klicken!", "wrong");
-                    } else {
-                        setResult(`✗ Falsch → ${currentText}`, "wrong");
-                    }
+                    if (!currentText) setResult("Bitte erst auf Abspielen klicken!", "wrong");
+                    else setResult(`✗ Falsch → ${currentText}`, "wrong");
                 }
             }
         }
@@ -1359,7 +1199,7 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
         function flashInput(cls) {
             let el = document.getElementById("answer");
             el.classList.remove('correct-flash', 'wrong-flash');
-            void el.offsetWidth; // reflow
+            void el.offsetWidth;
             el.classList.add(cls);
             setTimeout(() => el.classList.remove(cls), 600);
         }
@@ -1376,6 +1216,7 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             let el = document.getElementById("result");
             el.textContent = text;
             el.className = cls;
+            if (!text) showSnake(); else hideSnake();
         }
 
         // ─────────────────────────────────────────
@@ -1396,7 +1237,6 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             correctInRow = 0;
             wrongInRow = 0;
             timeLimit = 8000;
-
             document.getElementById("gameBtn").textContent = "■ Stoppen";
             document.getElementById("gameBtn").classList.add("stop");
             updateStats();
@@ -1410,24 +1250,20 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             cancelAnimationFrame(timerAnim);
             stopAudio();
             gameMode = false;
-
             document.getElementById("gameBtn").textContent = "▶ Starten";
             document.getElementById("gameBtn").classList.remove("stop");
             document.getElementById("timerBar").style.width = "100%";
             document.getElementById("timerBar").style.background = "var(--accent)";
-
             setResult(`Spiel beendet · ${score} Punkte`, "correct");
             updateLives();
         }
 
         async function nextRound() {
             if (!gameMode || lives <= 0) { stopGame(); return; }
-
             roundDone = false;
-            const data = await generate();
+            const data = generate();
             currentText = data.text;
             currentAnswer = data.answer;
-
             speak(currentText);
             document.getElementById("answer").value = "";
             document.getElementById("answer").className = "";
@@ -1435,13 +1271,10 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             document.getElementById("hint").textContent = getHint(currentType);
             setResult("", "");
             updateGameLevelBadge();
-
             clearTimeout(timer);
             cancelAnimationFrame(timerAnim);
-
             timerStart = performance.now();
             animateTimer();
-
             timer = setTimeout(() => {
                 addHistory(currentText, "—", false);
                 onWrong(true);
@@ -1464,30 +1297,24 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             clearTimeout(timer);
             cancelAnimationFrame(timerAnim);
             roundDone = true;
-
             let elapsed = performance.now() - timerStart;
             let timeBonus = Math.max(0, Math.floor((timeLimit - elapsed) / 500));
             let levelBonus = gameLevel;
             let pts = 10 + timeBonus + levelBonus * 5;
-
             score += pts;
             streak += 1;
             if (streak > bestStreak) bestStreak = streak;
             correctInRow += 1;
             wrongInRow = 0;
-
             addHistory(currentText, "✓", true);
             setResult(`✓ +${pts} Punkte${streak > 2 ? ' 🔥×' + streak : ''}`, "correct");
             updateStats();
-
-            // level up?
             if (correctInRow >= LEVEL_UP_THRESHOLD && gameLevel < 3) {
                 gameLevel++;
                 correctInRow = 0;
                 timeLimit = Math.max(4000, timeLimit - 500);
                 setResult(`⬆ Level ${gameLevel}! +${pts}`, "correct");
             }
-
             setTimeout(nextRound, 900);
         }
 
@@ -1495,24 +1322,19 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             clearTimeout(timer);
             cancelAnimationFrame(timerAnim);
             roundDone = true;
-
             lives--;
             streak = 0;
             wrongInRow += 1;
             correctInRow = 0;
-
             addHistory(currentText, timeout ? "⏱" : "✗", false);
             setResult(timeout ? `⏱ Zu langsam → ${currentText}` : `✗ Falsch → ${currentText}`, "wrong");
             updateStats();
             updateLives();
-
-            // level down?
             if (wrongInRow >= LEVEL_DOWN_THRESHOLD && gameLevel > 1) {
                 gameLevel--;
                 wrongInRow = 0;
                 timeLimit = Math.min(8000, timeLimit + 500);
             }
-
             if (lives <= 0) {
                 setTimeout(() => { stopGame(); setResult(`💀 Spiel vorbei · ${score} Punkte`, "wrong"); }, 800);
                 return;
@@ -1549,20 +1371,17 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             let list = document.getElementById("history-list");
             let item = document.createElement("div");
             item.className = "h-item " + (ok ? "ok" : "ng");
-            item.innerHTML = `<span class="h-q">${question}</span>
-    <span class="h-a">${answer} <span class="h-badge ${ok ? 'ok' : 'ng'}">${ok ? '✓' : '✗'}</span></span>`;
+            item.innerHTML = `<span class="h-q">${question}</span><span class="h-a">${answer} <span class="h-badge ${ok ? 'ok' : 'ng'}">${ok ? '✓' : '✗'}</span></span>`;
             list.appendChild(item);
             list.scrollTop = list.scrollHeight;
         }
 
-        function clearHistory() {
-            document.getElementById("history-list").innerHTML = "";
-        }
+        function clearHistory() { document.getElementById("history-list").innerHTML = ""; }
 
         // ─────────────────────────────────────────
         // AUTO-CHECK ON INPUT
         // ─────────────────────────────────────────
-        let roundDone = false; // guard: prevents double-fire when auto-check + Enter both trigger
+        let roundDone = false;
 
         document.getElementById("answer").addEventListener("input", () => {
             if (!gameMode || roundDone) return;
@@ -1580,6 +1399,116 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
         });
 
         // ─────────────────────────────────────────
+        // SNAKE ANIMATION
+        // ─────────────────────────────────────────
+        (function () {
+            const canvas = document.getElementById("snakeCanvas");
+            const ctx = canvas.getContext("2d");
+            const SZ = 6;
+            let W, H, cols, rows;
+            let snake, dir, food, raf, running = false;
+
+            function resize() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                W = canvas.width = Math.floor(rect.width / SZ) * SZ;
+                H = canvas.height = Math.floor(rect.height / SZ) * SZ;
+                cols = W / SZ; rows = H / SZ;
+            }
+
+            function init() {
+                resize();
+                let midX = Math.floor(cols / 2), midY = Math.floor(rows / 2);
+                snake = [{ x: midX, y: midY }, { x: midX - 1, y: midY }, { x: midX - 2, y: midY }];
+                dir = { x: 1, y: 0 };
+                placeFood();
+            }
+
+            function placeFood() {
+                let tries = 0;
+                do {
+                    food = { x: Math.floor(Math.random() * cols), y: Math.floor(Math.random() * rows) };
+                    tries++;
+                } while (tries < 100 && snake.some(s => s.x === food.x && s.y === food.y));
+            }
+
+            function accentColor() {
+                return getComputedStyle(document.body).getPropertyValue('--accent').trim() || '#5cffb1';
+            }
+
+            let lastTime = 0;
+            const SPEED = 120;
+
+            function step(ts) {
+                if (!running) return;
+                raf = requestAnimationFrame(step);
+                if (ts - lastTime < SPEED) return;
+                lastTime = ts;
+
+                let head0 = snake[0];
+                let options = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }]
+                    .filter(d => !(d.x === -dir.x && d.y === -dir.y))
+                    .filter(d => {
+                        let nx = head0.x + d.x, ny = head0.y + d.y;
+                        return nx >= 0 && nx < cols && ny >= 0 && ny < rows;
+                    });
+                if (options.length === 0) {
+                    options = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }]
+                        .filter(d => {
+                            let nx = head0.x + d.x, ny = head0.y + d.y;
+                            return nx >= 0 && nx < cols && ny >= 0 && ny < rows;
+                        });
+                }
+                options.sort((a, b) => {
+                    let da = Math.abs(head0.x + a.x - food.x) + Math.abs(head0.y + a.y - food.y);
+                    let db = Math.abs(head0.x + b.x - food.x) + Math.abs(head0.y + b.y - food.y);
+                    return da - db;
+                });
+                dir = Math.random() < 0.65 ? options[0] : options[Math.floor(Math.random() * options.length)];
+
+                let head = { x: head0.x + dir.x, y: head0.y + dir.y };
+                let ate = head.x === food.x && head.y === food.y;
+                // check self-collision before adding new head
+                let hitSelf = snake.some(s => s.x === head.x && s.y === head.y);
+                if (hitSelf) { init(); return; }
+                snake.unshift(head);
+                if (!ate) snake.pop(); else placeFood();
+
+                ctx.clearRect(0, 0, W, H);
+                let ac = accentColor();
+
+                ctx.fillStyle = ac + '55';
+                ctx.beginPath();
+                ctx.arc(food.x * SZ + SZ / 2, food.y * SZ + SZ / 2, SZ / 2 - 0.5, 0, Math.PI * 2);
+                ctx.fill();
+
+                snake.forEach((s, i) => {
+                    let alpha = Math.max(0.15, 1 - i / snake.length);
+                    ctx.fillStyle = ac + Math.floor(alpha * 255).toString(16).padStart(2, '0');
+                    ctx.beginPath();
+                    ctx.roundRect(s.x * SZ + 0.5, s.y * SZ + 0.5, SZ - 1, SZ - 1, 1.5);
+                    ctx.fill();
+                });
+            }
+
+            window.showSnake = function () {
+                if (running) return;
+                running = true;
+                init();
+                canvas.classList.add('visible');
+                raf = requestAnimationFrame(step);
+            };
+
+            window.hideSnake = function () {
+                running = false;
+                cancelAnimationFrame(raf);
+                canvas.classList.remove('visible');
+                ctx.clearRect(0, 0, W, H);
+            };
+
+            showSnake();
+        })();
+
+        // ─────────────────────────────────────────
         // THEME
         // ─────────────────────────────────────────
         function setTheme(mode) {
@@ -1591,7 +1520,12 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
             setTheme(document.body.classList.contains("dark") ? "light" : "dark");
         }
         (function () {
-            setTheme(localStorage.getItem("theme") || "dark");
+            const saved = localStorage.getItem("theme");
+            const osDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setTheme(saved || (osDark ? "dark" : "light"));
+            document.getElementById("hint").textContent = getHint(
+                document.getElementById("type").value === "mixed" ? "number" : document.getElementById("type").value
+            );
         })();
     </script>
 </body>
