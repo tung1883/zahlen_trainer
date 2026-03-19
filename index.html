@@ -96,7 +96,7 @@
         }
 
         .theme-btn {
-            background: var(--surface2);
+            background-color: var(--surface2);
             border: 1px solid var(--border);
             color: var(--text);
             border-radius: 20px;
@@ -708,8 +708,7 @@
             </div>
         </div>
 
-        <footer>de-DE · TTS multi-strategy · <span id="llm-status"
-                style="opacity:0;transition:opacity 0.3s;color:var(--accent3)">✨ KI</span> · v3</footer>
+        <footer>de-DE · von tung1883 · v3</footer>
     </div>
 
     <!-- TTS FALLBACK TOAST -->
@@ -1347,7 +1346,13 @@ Antworte NUR mit dem Satz, ohne Anführungszeichen, ohne Erklärung.`;
                 flashInput('wrong-flash');
                 shakeInput();
                 if (gameMode) onWrong();
-                else setResult(`✗ Falsch → ${currentText}`, "wrong");
+                else {
+                    if (!currentText) {
+                        setResult("Bitte erst auf Abspielen klicken!", "wrong");
+                    } else {
+                        setResult(`✗ Falsch → ${currentText}`, "wrong");
+                    }
+                }
             }
         }
 
