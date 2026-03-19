@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zahlen Hörtraining</title>
+    <title>ZahlenTrainer</title>
+    <link rel="icon" type="image/svg+xml"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d0d0f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='22' font-weight='700' fill='%235cffb1' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
     <link
         href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;500;700&display=swap"
         rel="stylesheet">
@@ -256,15 +258,27 @@
             border-color: var(--accent);
         }
 
-        /* ── RESULT ── */
+        /* ── RESULT / SNAKE — one shows at a time ── */
+        .feedback-box {
+            position: relative;
+            height: 2rem;
+            margin-top: 0.375rem;
+        }
+
         #result {
-            min-height: 1.75rem;
+            display: none;
+            position: absolute;
+            inset: 0;
             font-size: 0.9375rem;
             font-weight: 700;
             text-align: center;
-            padding: 0.25rem;
+            line-height: 2rem;
             font-family: 'Space Mono', monospace;
             transition: color 0.2s;
+        }
+
+        #result.visible {
+            display: block;
         }
 
         #result.correct {
@@ -275,25 +289,21 @@
             color: var(--wrong);
         }
 
-        /* ── SNAKE CANVAS ── */
         .snake-wrap {
-            position: relative;
-            height: 1.5rem;
-            margin: 0.5rem 0 0;
+            position: absolute;
+            inset: 0;
             overflow: hidden;
             border-radius: 0.5rem;
+        }
+
+        .snake-wrap.hidden {
+            display: none;
         }
 
         #snakeCanvas {
             display: block;
             width: 100%;
             height: 100%;
-            opacity: 0;
-            transition: opacity 0.5s;
-        }
-
-        #snakeCanvas.visible {
-            opacity: 1;
         }
 
         /* ── GAME PANEL ── */
@@ -680,10 +690,12 @@
                 <button class="btn-check" onclick="check()">✓ OK</button>
             </div>
             <div class="hint" id="hint"></div>
-            <div class="snake-wrap">
-                <canvas id="snakeCanvas"></canvas>
+            <div class="feedback-box">
+                <div class="snake-wrap" id="snakeWrap">
+                    <canvas id="snakeCanvas"></canvas>
+                </div>
+                <p id="result"></p>
             </div>
-            <p id="result"></p>
         </div>
 
         <!-- GAME CARD -->
@@ -1215,7 +1227,7 @@
         function setResult(text, cls) {
             let el = document.getElementById("result");
             el.textContent = text;
-            el.className = cls;
+            el.className = text ? ('visible ' + cls) : '';
             if (!text) showSnake(); else hideSnake();
         }
 
@@ -1410,8 +1422,14 @@
 
             function resize() {
                 const rect = canvas.parentElement.getBoundingClientRect();
-                W = canvas.width = Math.floor(rect.width / SZ) * SZ;
-                H = canvas.height = Math.floor(rect.height / SZ) * SZ;
+                const dpr = window.devicePixelRatio || 1;
+                W = Math.floor(rect.width / SZ) * SZ;
+                H = Math.floor(rect.height / SZ) * SZ;
+                canvas.width = W * dpr;
+                canvas.height = H * dpr;
+                canvas.style.width = W + 'px';
+                canvas.style.height = H + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
                 cols = W / SZ; rows = H / SZ;
             }
 
@@ -1443,6 +1461,7 @@
                 raf = requestAnimationFrame(step);
                 if (ts - lastTime < SPEED) return;
                 lastTime = ts;
+                if (!dir || !snake || snake.length === 0) { init(); return; }
 
                 let head0 = snake[0];
                 let options = [{ x: 1, y: 0 }, { x: -1, y: 0 }, { x: 0, y: 1 }, { x: 0, y: -1 }]
@@ -1458,6 +1477,7 @@
                             return nx >= 0 && nx < cols && ny >= 0 && ny < rows;
                         });
                 }
+                if (options.length === 0) { init(); return; } // completely cornered, just restart
                 options.sort((a, b) => {
                     let da = Math.abs(head0.x + a.x - food.x) + Math.abs(head0.y + a.y - food.y);
                     let db = Math.abs(head0.x + b.x - food.x) + Math.abs(head0.y + b.y - food.y);
@@ -1494,15 +1514,15 @@
                 if (running) return;
                 running = true;
                 init();
-                canvas.classList.add('visible');
+                document.getElementById('snakeWrap').classList.remove('hidden');
                 raf = requestAnimationFrame(step);
             };
 
             window.hideSnake = function () {
                 running = false;
                 cancelAnimationFrame(raf);
-                canvas.classList.remove('visible');
-                ctx.clearRect(0, 0, W, H);
+                document.getElementById('snakeWrap').classList.add('hidden');
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
             };
 
             showSnake();
