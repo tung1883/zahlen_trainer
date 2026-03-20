@@ -4,12 +4,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZahlenTrainer</title>
     <meta name="description" content="Zahlen Hörverstehen Trainer — übe Zahlen, Preise, Daten und mehr auf Deutsch.">
     <meta property="og:title" content="ZahlenTrainer">
-    <meta property="og:description" content="Zahlen Hörverstehen Trainer — übe Zahlen, Preise, Daten und mehr auf Deutsch.">
+    <meta property="og:description"
+        content="Zahlen Hörverstehen Trainer — übe Zahlen, Preise, Daten und mehr auf Deutsch.">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#0d0d0f">
-    <title>ZahlenTrainer</title>
     <link rel="icon" type="image/svg+xml"
         href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230d0d0f'/%3E%3Ctext x='16' y='23' font-family='monospace' font-size='22' font-weight='700' fill='%235cffb1' text-anchor='middle'%3EZ%3C/text%3E%3C/svg%3E">
     <link
@@ -753,9 +754,6 @@
             <div
                 style="font-size:0.8125rem; color:var(--muted); font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.625rem;">
                 Audio nicht verfügbar</div>
-            <div id="tts-toast-text"
-                style="font-family:'Space Mono',monospace; font-size:0.9375rem; color:var(--accent); line-height:1.6; background:var(--surface2); border-radius:0.5rem; padding:0.75rem 0.875rem; margin-bottom:1rem; border:1px solid var(--border);">
-            </div>
             <div style="font-size:0.75rem; color:var(--muted); margin-bottom:1.25rem; line-height:1.5;">
                 💡 Für Audio: HTML-Datei direkt im Browser öffnen<br>
                 <span style="color:var(--accent3)">(Chrome / Firefox / Safari)</span>
@@ -1120,15 +1118,36 @@
         // ─────────────────────────────────────────
         let ttsAudio = null;
 
+        // cache voices once loaded (iOS fires voiceschanged async)
+        let cachedVoices = [];
+        if (typeof speechSynthesis !== 'undefined') {
+            cachedVoices = speechSynthesis.getVoices();
+            speechSynthesis.addEventListener('voiceschanged', () => {
+                cachedVoices = speechSynthesis.getVoices();
+            });
+        }
+
+        function getGermanVoice() {
+            const voices = cachedVoices.length ? cachedVoices : speechSynthesis.getVoices();
+            return voices.find(v => v.lang === 'de-DE')
+                || voices.find(v => v.lang.startsWith('de'))
+                || null;
+        }
+
         function speak(text) {
             stopAudio();
             if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
                 try {
-                    let u = new SpeechSynthesisUtterance(text);
-                    u.lang = "de-DE";
-                    u.rate = 0.92;
-                    speechSynthesis.speak(u);
-                    return;
+                    const deVoice = getGermanVoice();
+                    if (deVoice) {
+                        let u = new SpeechSynthesisUtterance(text);
+                        u.lang = "de-DE";
+                        u.rate = 0.92;
+                        u.voice = deVoice;
+                        speechSynthesis.speak(u);
+                        return;
+                    }
+                    // no German voice installed — fall through to Google TTS
                 } catch (e) { }
             }
             if (window.Android && typeof window.Android.speak === 'function') {
@@ -1138,9 +1157,10 @@
                 let encoded = encodeURIComponent(text);
                 let url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=de&client=tw-ob`;
                 ttsAudio = new Audio(url);
-                ttsAudio.play().catch(() => showTextFallback(text));
+                console.log(ttsAudio)
+                ttsAudio.play().catch(() => showTextFallback());
             } catch (e) {
-                showTextFallback(text);
+                showTextFallback();
             }
         }
 
@@ -1153,8 +1173,7 @@
 
         let ttsToastShown = false;
 
-        function showTextFallback(text) {
-            document.getElementById("tts-toast-text").textContent = text;
+        function showTextFallback() {
             let toast = document.getElementById("tts-toast");
             toast.style.display = "flex";
             if (ttsToastShown) setTimeout(closeTtsToast, 4000);
@@ -1207,7 +1226,7 @@
                 shakeInput();
                 if (gameMode) onWrong();
                 else {
-                    if (!currentText) setResult("Bitte auf Abspielen klicken!", "wrong");
+                    if (!currentText) setResult("Bitte erst auf Abspielen klicken!", "wrong");
                     else setResult(`✗ Falsch → ${currentText}`, "wrong");
                 }
             }
@@ -1553,6 +1572,7 @@
             );
         })();
     </script>
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=lJuZDogC"></script>
 </body>
 
 </html>
