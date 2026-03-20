@@ -1140,24 +1140,24 @@
             stopAudio();
 
             // Strategy 1: Web Speech API with explicit German voice
-            if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
-                try {
-                    const deVoice = getGermanVoice();
-                    if (deVoice) {
-                        let u = new SpeechSynthesisUtterance(text);
-                        u.lang = "de-DE";
-                        u.rate = 0.92;
-                        u.voice = deVoice;
-                        speechSynthesis.speak(u);
-                        return;
-                    }
-                } catch (e) { }
-            }
+            // if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
+            //     try {
+            //         const deVoice = getGermanVoice();
+            //         if (deVoice) {
+            //             let u = new SpeechSynthesisUtterance(text);
+            //             u.lang = "de-DE";
+            //             u.rate = 0.92;
+            //             u.voice = deVoice;
+            //             speechSynthesis.speak(u);
+            //             return;
+            //         }
+            //     } catch (e) { }
+            // }
 
-            // Strategy 2: Android native bridge
-            if (window.Android && typeof window.Android.speak === 'function') {
-                try { window.Android.speak(text, "de-DE"); return; } catch (e) { }
-            }
+            // // Strategy 2: Android native bridge
+            // if (window.Android && typeof window.Android.speak === 'function') {
+            //     try { window.Android.speak(text, "de-DE"); return; } catch (e) { }
+            // }
 
             // Strategy 3: ResponsiveVoice (works on iOS + most browsers, no German voice needed)
             if (typeof responsiveVoice !== 'undefined') {
@@ -1530,7 +1530,19 @@
                     let da = Math.abs(head0.x + a.x - food.x) + Math.abs(head0.y + a.y - food.y);
                     let db = Math.abs(head0.x + b.x - food.x) + Math.abs(head0.y + b.y - food.y);
                     return da - db;
-                });
+                });            if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
+                try {
+                    const deVoice = getGermanVoice();
+                    if (deVoice) {
+                        let u = new SpeechSynthesisUtterance(text);
+                        u.lang = "de-DE";
+                        u.rate = 0.92;
+                        u.voice = deVoice;
+                        speechSynthesis.speak(u);
+                        return;
+                    }
+                } catch (e) { }
+            }
                 dir = Math.random() < 0.65 ? options[0] : options[Math.floor(Math.random() * options.length)];
 
                 let head = { x: head0.x + dir.x, y: head0.y + dir.y };
