@@ -742,7 +742,7 @@
             </div>
         </div>
 
-        <footer>de-DE · von tung1883 · v4</footer>
+        <footer>de-DE · von tung1883 · v1</footer>
     </div>
 
     <!-- TTS FALLBACK TOAST -->
@@ -1136,23 +1136,24 @@
 
         function speak(text) {
             stopAudio();
-            if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
-                try {
-                    const deVoice = getGermanVoice();
-                    if (deVoice) {
-                        let u = new SpeechSynthesisUtterance(text);
-                        u.lang = "de-DE";
-                        u.rate = 0.92;
-                        u.voice = deVoice;
-                        speechSynthesis.speak(u);
-                        return;
-                    }
-                    // no German voice installed — fall through to Google TTS
-                } catch (e) { }
-            }
-            if (window.Android && typeof window.Android.speak === 'function') {
-                try { window.Android.speak(text, "de-DE"); return; } catch (e) { }
-            }
+            // if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
+            //     try {
+            //         const deVoice = getGermanVoice();
+            //         if (deVoice) {
+            //             let u = new SpeechSynthesisUtterance(text);
+            //             u.lang = "de-DE";
+            //             u.rate = 0.92;
+            //             u.voice = deVoice;
+            //             speechSynthesis.speak(u);
+            //             return;
+            //         }
+            //         // no German voice installed — fall through to Google TTS
+            //     } catch (e) { }
+            // }
+            // if (window.Android && typeof window.Android.speak === 'function') {
+            //     try { window.Android.speak(text, "de-DE"); return; } catch (e) { }
+            // }
+
             try {
                 responsiveVoice.speak(text, "Deutsch Female");
             } catch (e) {
