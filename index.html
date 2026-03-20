@@ -678,7 +678,9 @@
                     <select id="level">
                         <option value="1">Level 1 · 1–99</option>
                         <option value="2">Level 2 · 100–999</option>
-                        <option value="3">Level 3 · 1000+</option>
+                        <option value="3">Level 3 · 1.000–99.999</option>
+                        <option value="4">Level 4 · 100.000–999.999</option>
+                        <option value="5">Level 5 · bis 10.000.000</option>
                     </select>
                 </div>
             </div>
@@ -742,7 +744,7 @@
             </div>
         </div>
 
-        <footer>de-DE · von tung1883 · v1</footer>
+        <footer>de-DE · von tung1883 · v4</footer>
     </div>
 
     <!-- TTS FALLBACK TOAST -->
@@ -751,10 +753,11 @@
         <div
             style="background:var(--surface); border:1px solid var(--border); border-radius:1rem; padding:1.75rem 1.5rem; max-width:23.75rem; width:100%; text-align:center; font-family:'DM Sans',sans-serif;">
             <div style="font-size:3rem; margin-bottom:0.75rem;">🔇</div>
-            <div
+            <div id="tts-toast-title"
                 style="font-size:0.8125rem; color:var(--muted); font-family:'Space Mono',monospace; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.625rem;">
                 Audio nicht verfügbar</div>
-            <div style="font-size:0.75rem; color:var(--muted); margin-bottom:1.25rem; line-height:1.5;">
+            <div id="tts-toast-hint"
+                style="font-size:0.75rem; color:var(--muted); margin-bottom:1.25rem; line-height:1.5;">
                 💡 Für Audio: HTML-Datei direkt im Browser öffnen<br>
                 <span style="color:var(--accent3)">(Chrome / Firefox / Safari)</span>
             </div>
@@ -764,8 +767,8 @@
         </div>
     </div>
 
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
     <script>
-        // ─────────────────────────────────────────
         // STATE
         // ─────────────────────────────────────────
         let currentText = "";
@@ -977,7 +980,9 @@
         function generateNumber(level) {
             if (level == 1) return rand(1, 99);
             if (level == 2) return rand(100, 999);
-            return rand(1000, 999999);
+            if (level == 3) return rand(1000, 99999);
+            if (level == 4) return rand(100000, 999999);
+            return rand(1000000, 10000000);
         }
 
         function buildRaw(type, level) {
@@ -1116,9 +1121,6 @@
         // ─────────────────────────────────────────
         // AUDIO — multi-strategy TTS
         // ─────────────────────────────────────────
-        let ttsAudio = null;
-
-        // cache voices once loaded (iOS fires voiceschanged async)
         let cachedVoices = [];
         if (typeof speechSynthesis !== 'undefined') {
             cachedVoices = speechSynthesis.getVoices();
@@ -1136,41 +1138,66 @@
 
         function speak(text) {
             stopAudio();
-            // if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
-            //     try {
-            //         const deVoice = getGermanVoice();
-            //         if (deVoice) {
-            //             let u = new SpeechSynthesisUtterance(text);
-            //             u.lang = "de-DE";
-            //             u.rate = 0.92;
-            //             u.voice = deVoice;
-            //             speechSynthesis.speak(u);
-            //             return;
-            //         }
-            //         // no German voice installed — fall through to Google TTS
-            //     } catch (e) { }
-            // }
-            // if (window.Android && typeof window.Android.speak === 'function') {
-            //     try { window.Android.speak(text, "de-DE"); return; } catch (e) { }
-            // }
 
-            try {
-                responsiveVoice.speak(text, "Deutsch Female");
-            } catch (e) {
-                showTextFallback();
+            // Strategy 1: Web Speech API with explicit German voice
+            if (typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined') {
+                try {
+                    const deVoice = getGermanVoice();
+                    if (deVoice) {
+                        let u = new SpeechSynthesisUtterance(text);
+                        u.lang = "de-DE";
+                        u.rate = 0.92;
+                        u.voice = deVoice;
+                        speechSynthesis.speak(u);
+                        return;
+                    }
+                } catch (e) { }
             }
+
+            // Strategy 2: Android native bridge
+            if (window.Android && typeof window.Android.speak === 'function') {
+                try { window.Android.speak(text, "de-DE"); return; } catch (e) { }
+            }
+
+            // Strategy 3: ResponsiveVoice (works on iOS + most browsers, no German voice needed)
+            if (typeof responsiveVoice !== 'undefined') {
+                try {
+                    responsiveVoice.speak(text, "Deutsch Female", {
+                        rate: 0.9,
+                        onend: function () { },
+                        onerror: function () { showTextFallback(text, true); }
+                    });
+                    return;
+                } catch (e) { }
+            }
+
+            // Strategy 4: all failed
+            showTextFallback();
         }
 
         function stopAudio() {
             if (typeof speechSynthesis !== 'undefined') {
                 try { speechSynthesis.cancel(); } catch (e) { }
             }
-            if (ttsAudio) { ttsAudio.pause(); ttsAudio.src = ""; ttsAudio = null; }
+            if (typeof responsiveVoice !== 'undefined') {
+                try { responsiveVoice.cancel(); } catch (e) { }
+            }
         }
 
         let ttsToastShown = false;
 
-        function showTextFallback() {
+        function showTextFallback(rvFailed) {
+            if (rvFailed) {
+                document.getElementById("tts-toast-title").textContent = "Audio-API überlastet 💸";
+                document.getElementById("tts-toast-hint").innerHTML =
+                    "😅 Der Besitzer ist zu arm für eine richtige API.<br>" +
+                    "<span style='color:var(--accent3)'>Bitte später nochmal versuchen.</span>";
+            } else {
+                document.getElementById("tts-toast-title").textContent = "Audio nicht verfügbar";
+                document.getElementById("tts-toast-hint").innerHTML =
+                    "💡 Für Audio: HTML-Datei direkt im Browser öffnen<br>" +
+                    "<span style='color:var(--accent3)'>(Chrome / Firefox / Safari)</span>";
+            }
             let toast = document.getElementById("tts-toast");
             toast.style.display = "flex";
             if (ttsToastShown) setTimeout(closeTtsToast, 4000);
@@ -1342,7 +1369,7 @@
             addHistory(currentText, "✓", true);
             setResult(`✓ +${pts} Punkte${streak > 2 ? ' 🔥×' + streak : ''}`, "correct");
             updateStats();
-            if (correctInRow >= LEVEL_UP_THRESHOLD && gameLevel < 3) {
+            if (correctInRow >= LEVEL_UP_THRESHOLD && gameLevel < 5) {
                 gameLevel++;
                 correctInRow = 0;
                 timeLimit = Math.max(4000, timeLimit - 500);
@@ -1569,8 +1596,6 @@
             );
         })();
     </script>
-
-    <script src="https://code.responsivevoice.org/responsivevoice.js?key=lJuZDogC"></script>
 </body>
 
 </html>
