@@ -1154,11 +1154,7 @@
                 try { window.Android.speak(text, "de-DE"); return; } catch (e) { }
             }
             try {
-                let encoded = encodeURIComponent(text);
-                let url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encoded}&tl=de&client=tw-ob`;
-                ttsAudio = new Audio(url);
-                console.log(ttsAudio)
-                ttsAudio.play().catch(() => showTextFallback());
+                responsiveVoice.speak(text, "Deutsch Female");
             } catch (e) {
                 showTextFallback();
             }
@@ -1572,6 +1568,7 @@
             );
         })();
     </script>
+
     <script src="https://code.responsivevoice.org/responsivevoice.js?key=lJuZDogC"></script>
 </body>
 
